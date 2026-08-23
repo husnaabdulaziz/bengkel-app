@@ -7,9 +7,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+use App\Http\Controllers\DashboardController;
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -63,5 +62,7 @@ Route::prefix('pos')->name('pos.')->group(function () {
     Route::post('/queue/{workOrder}/payment', [PosController::class, 'confirmPayment'])->name('payment.confirm');
     Route::get('/invoice/{workOrder}', [PosController::class, 'invoice'])->name('invoice');
 });
+
+
 
 require __DIR__.'/auth.php';
