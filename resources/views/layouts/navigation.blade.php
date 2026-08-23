@@ -36,6 +36,9 @@
                     <x-nav-link :href="route('stock-transfers.index')" :active="request()->routeIs('stock-transfers.*')">
                         {{ __('Transfer Stock') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('pos.queue')" :active="request()->routeIs('pos.*')">
+                        {{ __('POS') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -112,6 +115,9 @@
             <x-nav-link :href="route('stock-transfers.index')" :active="request()->routeIs('stock-transfers.*')">
                 {{ __('Transfer Stock') }}
             </x-nav-link>
+            <x-responsive-nav-link :href="route('pos.queue')" :active="request()->routeIs('pos.*')">
+                {{ __('POS') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->

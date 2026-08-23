@@ -16,6 +16,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductBrandController;
 use App\Http\Controllers\SupplierController;
@@ -43,5 +44,24 @@ Route::post('stock-transfers/{stockTransfer}/approve', [StockTransferController:
 Route::post('stock-transfers/{stockTransfer}/ship', [StockTransferController::class, 'ship'])->name('stock-transfers.ship');
 Route::post('stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive'])->name('stock-transfers.receive');
 
+//POS
+use App\Http\Controllers\PosController;
+
+Route::prefix('pos')->name('pos.')->group(function () {
+    Route::get('/new', [PosController::class, 'create'])->name('create');
+    Route::post('/', [PosController::class, 'store'])->name('store');
+    Route::get('/search-customer', [PosController::class, 'searchCustomer'])->name('search-customer');
+    Route::get('/search-product', [PosController::class, 'searchProduct'])->name('search-product');
+    Route::get('/queue', [PosController::class, 'queue'])->name('queue');
+    Route::get('/queue/data', [PosController::class, 'queueData'])->name('queue.data');
+    Route::delete('/queue/{workOrder}', [PosController::class, 'destroy'])->name('queue.destroy');
+    Route::get('/queue/{workOrder}', [PosController::class, 'showQueue'])->name('queue.show');
+    Route::post('/queue/{workOrder}/items', [PosController::class, 'addItem'])->name('queue.add-item');
+    Route::delete('/queue/{workOrder}/items/{item}', [PosController::class, 'removeItem'])->name('queue.remove-item');
+    Route::post('/queue/{workOrder}/process', [PosController::class, 'process'])->name('queue.process');
+    Route::get('/queue/{workOrder}/payment', [PosController::class, 'paymentForm'])->name('payment');
+    Route::post('/queue/{workOrder}/payment', [PosController::class, 'confirmPayment'])->name('payment.confirm');
+    Route::get('/invoice/{workOrder}', [PosController::class, 'invoice'])->name('invoice');
+});
 
 require __DIR__.'/auth.php';
