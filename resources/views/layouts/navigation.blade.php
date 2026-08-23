@@ -30,6 +30,9 @@
                     <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
                         {{ __('Pembelian') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
+                        {{ __('Stock Opname') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -99,6 +102,9 @@
             </x-nav-link>
             <x-nav-link :href="route('purchases.index')" :active="request()->routeIs('purchases.*')">
                 {{ __('Pembelian') }}
+            </x-nav-link>
+            <x-nav-link :href="route('stock-opnames.index')" :active="request()->routeIs('stock-opnames.*')">
+                {{ __('Stock Opname') }}
             </x-nav-link>
         </div>
 

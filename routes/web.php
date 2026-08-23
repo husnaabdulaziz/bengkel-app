@@ -30,4 +30,11 @@ Route::middleware(['auth'])->group(function () {
 
 use App\Http\Controllers\PurchaseController;
 Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
+
+use App\Http\Controllers\StockOpnameController;
+
+Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+Route::post('stock-opnames/{stockOpname}/adjust', [StockOpnameController::class, 'adjust'])->name('stock-opnames.adjust');
+Route::get('stock-opnames/{stockOpname}/pdf', [StockOpnameController::class, 'pdf'])->name('stock-opnames.pdf');
+
 require __DIR__.'/auth.php';
