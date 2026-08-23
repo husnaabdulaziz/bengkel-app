@@ -44,8 +44,8 @@
     </div>
 
     @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <script>
+<script>
+    window.addEventListener('load', function () {
         new Chart(document.getElementById('salesChart'), {
             type: 'line',
             data: {
@@ -71,6 +71,7 @@
                 }
             }
         });
-    </script>
-    @endpush
+    });
+</script>
+@endpush
 </x-app-layout>
