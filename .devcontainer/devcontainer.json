@@ -1,0 +1,10 @@
+{
+  "name": "bengkel-app",
+  "image": "mcr.microsoft.com/devcontainers/php:8.2",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y mysql-server && sudo service mysql start && sudo mysql -e \"CREATE DATABASE IF NOT EXISTS bengkel_dev; CREATE USER IF NOT EXISTS 'bengkel'@'localhost' IDENTIFIED BY 'secret'; GRANT ALL ON bengkel_dev.* TO 'bengkel'@'localhost'; FLUSH PRIVILEGES;\"",
+  "postStartCommand": "sudo service mysql start && sudo chmod 755 /run/mysqld && sudo chmod 777 /run/mysqld/mysqld.sock || true",
+  "forwardPorts": [3306, 8000]
+}
