@@ -15,6 +15,15 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('product-categories.index')" :active="request()->routeIs('product-categories.*')">
+                        {{ __('Kategori Produk') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('product-brands.index')" :active="request()->routeIs('product-brands.*')">
+                        {{ __('Brand') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                        {{ __('Supplier') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +78,15 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('product-categories.index')" :active="request()->routeIs('product-categories.*')">
+                {{ __('Kategori Produk') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('product-brands.index')" :active="request()->routeIs('product-brands.*')">
+                {{ __('Brand') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
+                {{ __('Supplier') }}
             </x-responsive-nav-link>
         </div>
 

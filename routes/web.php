@@ -16,5 +16,15 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductBrandController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ProductController;
 
+Route::middleware(['auth'])->group(function () {
+    Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-brands', ProductBrandController::class)->except(['show', 'create', 'edit']);
+    Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
+    Route::resource('products', ProductController::class)->except(['show']);
+});
 require __DIR__.'/auth.php';
