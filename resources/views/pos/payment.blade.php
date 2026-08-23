@@ -14,7 +14,17 @@
              },
              get total() { return Math.max(this.subtotal - this.discountAmount, 0); }
          }">
+        @if ($assignedTechnicians->isNotEmpty())
+            <div class="bg-white p-4 rounded shadow mb-4 flex items-center gap-2">
+                <span class="text-sm text-gray-500">Mekanik:</span>
+                @foreach ($assignedTechnicians as $tech)
+                    <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">{{ $tech->inisial ?? $tech->name }}</span>
+                @endforeach
+            </div>
+        @endif
 
+        <div class="bg-white rounded shadow overflow-hidden mb-4">
+            <table class="w-full text-left text-sm">
         <div class="bg-white rounded shadow overflow-hidden mb-4">
             <table class="w-full text-left text-sm">
                 <thead class="bg-gray-100">

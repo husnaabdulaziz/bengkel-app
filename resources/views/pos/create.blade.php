@@ -98,7 +98,33 @@
                     <option value="custom">Custom (edit manual per item)</option>
                 </select>
             </div>
+            <!-- ===== BAGIAN MEKANIK ===== -->
+            <div class="bg-white p-6 rounded shadow mb-4">
+                <h3 class="font-semibold mb-3">Mekanik yang Mengerjakan</h3>
+                <p class="text-xs text-gray-400 mb-2">Data ini hanya untuk pencatatan fee internal, tidak ditampilkan di invoice pelanggan.</p>
 
+                <div class="flex flex-wrap gap-4">
+                    @foreach ($technicians as $tech)
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" value="{{ $tech->id }}" @change="toggleTechnician({{ $tech->id }})" :checked="selectedTechnicians.includes({{ $tech->id }})">
+                            {{ $tech->inisial ?? $tech->name }}
+                        </label>
+                    @endforeach
+                </div>
+
+                <label class="flex items-center gap-2 text-sm mt-3 pt-3 border-t">
+                    <input type="checkbox" x-model="manualFee" :disabled="selectedTechnicians.length > 1">
+                    <span>Input Fee Manual</span>
+                </label>
+                <p class="text-xs text-gray-400 mt-1" x-show="selectedTechnicians.length > 1">
+                    Fee wajib diisi manual karena lebih dari 1 mekanik dipilih.
+                </p>
+
+                <template x-for="techId in selectedTechnicians" :key="techId">
+                    <input type="hidden" name="technician_ids[]" :value="techId">
+                </template>
+                <input type="hidden" name="manual_fee" :value="manualFee ? 1 : 0">
+            </div>
             <!-- ===== BAGIAN ITEM PRODUK ===== -->
             <div class="bg-white p-6 rounded shadow mb-4">
                 <h3 class="font-semibold mb-3">Item Produk / Jasa</h3>
@@ -140,6 +166,9 @@
                                     <input type="number" step="0.01" :name="`items[${index}][unit_price]`" x-model.number="item.unit_price" class="border rounded px-2 py-1 w-28 text-right">
                                 </td>
                                 <td class="p-2 text-right" x-text="'Rp ' + (item.quantity * item.unit_price).toLocaleString('id-ID')"></td>
+
+                                
+
                                 <td class="p-2">
                                     <button type="button" @click="items.splice(index, 1)" class="text-red-600 text-xs">Hapus</button>
                                 </td>
@@ -169,6 +198,8 @@
                 productQuery: '', productResults: [],
                 items: [],
                 priceTier: 'harga_jual',
+                selectedTechnicians: [],
+                manualFee: false,
                 _debounce: null,
 
                 searchCustomers() {
@@ -217,6 +248,13 @@
                     this.items.forEach(item => {
                         if (item._raw) item.unit_price = this.priceForTier(item._raw);
                     });
+                },
+                toggleTechnician(techId) {
+                    const idx = this.selectedTechnicians.indexOf(techId);
+                    if (idx === -1) this.selectedTechnicians.push(techId);
+                    else this.selectedTechnicians.splice(idx, 1);
+
+                    if (this.selectedTechnicians.length > 1) this.manualFee = true;
                 },
                 get total() {
                     return this.items.reduce((sum, it) => sum + (it.quantity * it.unit_price), 0);

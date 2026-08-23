@@ -29,7 +29,7 @@
 </script>
 
     <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8"
-         x-data="queueDetail({{ $workOrder->id }})">
+     x-data="queueDetail({{ $workOrder->id }}, {{ json_encode($assignedTechnicianIds) }}, {{ $currentManualFee ? 'true' : 'false' }})">
 
         @if (session('success'))
             <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
@@ -39,17 +39,18 @@
         @endif
 
         <div class="bg-white p-6 rounded shadow mb-4">
-    <div class="grid grid-cols-2 gap-2 text-sm">
-        <div><strong>Nama:</strong> {{ $workOrder->customer->nama }}</div>
-        <div><strong>Telpon:</strong> {{ $workOrder->customer->telpon }}</div>
-        <div><strong>Plat Nomor:</strong> {{ $workOrder->customer->plat_nomor }}</div>
-        <div><strong>Status:</strong> {{ ucfirst($workOrder->stage) }}</div>
-        @if ($workOrder->stage === 'completed')
-            <div><strong>Metode Bayar:</strong> {{ ucfirst($workOrder->payment_method) }}</div>
-            <div><strong>Dibayar:</strong> {{ $workOrder->paid_at?->format('d/m/Y H:i') }}</div>
-        @endif
-    </div>
-</div>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <div><strong>Nama:</strong> {{ $workOrder->customer->nama }}</div>
+                <div><strong>Telpon:</strong> {{ $workOrder->customer->telpon }}</div>
+                <div><strong>Plat Nomor:</strong> {{ $workOrder->customer->plat_nomor }}</div>
+                <div><strong>Status:</strong> {{ ucfirst($workOrder->stage) }}</div>
+                @if ($workOrder->stage === 'completed')
+                    <div><strong>Metode Bayar:</strong> {{ ucfirst($workOrder->payment_method) }}</div>
+                    <div><strong>Dibayar:</strong> {{ $workOrder->paid_at?->format('d/m/Y H:i') }}</div>
+                @endif
+            </div>
+        </div>
+        
         @if ($workOrder->stage !== 'completed')
         <div class="bg-white p-6 rounded shadow mb-4">
             <h3 class="font-semibold mb-3">Tambah Item</h3>
@@ -109,11 +110,45 @@
             </table>
             <div class="p-3 text-right font-semibold border-t">Total: Rp {{ number_format($workOrder->total_amount, 0, ',', '.') }}</div>
         </div>
+        @if ($workOrder->stage !== 'completed')
+        <div class="bg-white p-6 rounded shadow mb-4">
+            <h3 class="font-semibold mb-3">Mekanik yang Mengerjakan</h3>
+            <p class="text-xs text-gray-400 mb-2">Data ini hanya untuk pencatatan fee internal, tidak ditampilkan di invoice pelanggan.</p>
 
+            <form method="POST" action="{{ route('pos.queue.update-technicians', $workOrder) }}">
+                @csrf
+                <div class="flex flex-wrap gap-4 mb-3">
+                    @foreach ($technicians as $tech)
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" name="technician_ids[]" value="{{ $tech->id }}" @change="toggleTechnician({{ $tech->id }})" :checked="selectedTechnicians.includes({{ $tech->id }})">
+                            {{ $tech->inisial ?? $tech->name }}
+                        </label>
+                    @endforeach
+                </div>
+                <label class="flex items-center gap-2 text-sm mb-3">
+                    <input type="checkbox" name="manual_fee" value="1" x-model="manualFee" :disabled="selectedTechnicians.length > 1">
+                    Input Fee Manual
+                </label>
+                <p class="text-xs text-gray-400 mb-3" x-show="selectedTechnicians.length > 1">
+                    Fee wajib diisi manual karena lebih dari 1 mekanik dipilih.
+                </p>
+                <button type="submit" class="bg-gray-700 text-white px-4 py-2 rounded text-sm">Simpan Mekanik</button>
+            </form>
+        </div>
+        @else
+            @if ($assignedTechnicians->isNotEmpty())
+                <div class="bg-white p-4 rounded shadow mb-4 flex items-center gap-2">
+                    <span class="text-sm text-gray-500">Mekanik:</span>
+                    @foreach ($assignedTechnicians as $tech)
+                        <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">{{ $tech->inisial ?? $tech->name }}</span>
+                    @endforeach
+                </div>
+            @endif
+        @endif
         @if ($workOrder->stage === 'draft')
     <form method="POST" action="{{ route('pos.queue.process', $workOrder) }}">
         @csrf
-        <button type="submit" class="bg-yellow-600 text-white px-6 py-2 rounded">Mulai Proses (Masuk Antrian)</button>
+        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Lanjut ke Pembayaran</button>
     </form>
 @elseif ($workOrder->stage === 'queue')
     <a href="{{ route('pos.payment', $workOrder) }}" class="inline-block bg-green-600 text-white px-6 py-2 rounded">Lanjut ke Pembayaran</a>
@@ -124,24 +159,17 @@
 
     @push('scripts')
     <script>
-        function queueDetail(workOrderId) {
+        function queueDetail(workOrderId, initialTechnicianIds, initialManualFee) {
             return {
                 productQuery: '', productResults: [], _debounce: null,
-                searchProducts() {
-                    clearTimeout(this._debounce);
-                    if (this.productQuery.length < 2) { this.productResults = []; return; }
-                    this._debounce = setTimeout(() => {
-                        fetch(`{{ route('pos.search-product') }}?q=${encodeURIComponent(this.productQuery)}`)
-                            .then(r => r.json())
-                            .then(data => this.productResults = data);
-                    }, 300);
-                },
-                submitAddItem(p) {
-                    const tier = '{{ $workOrder->customer_price_tier }}';
-                    const price = parseFloat(p[tier] ?? p.harga_jual);
-                    this.$refs.product_id.value = p.id;
-                    this.$refs.unit_price.value = price;
-                    document.getElementById('add-item-form').submit();
+                selectedTechnicians: initialTechnicianIds,
+                manualFee: initialManualFee,
+                toggleTechnician(techId) {
+                    const idx = this.selectedTechnicians.indexOf(techId);
+                    if (idx === -1) this.selectedTechnicians.push(techId);
+                    else this.selectedTechnicians.splice(idx, 1);
+
+                    if (this.selectedTechnicians.length > 1) this.manualFee = true;
                 },
             }
         }

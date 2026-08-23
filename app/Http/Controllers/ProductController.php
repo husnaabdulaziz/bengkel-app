@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductFee;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+
 
 class ProductController extends Controller
 {
@@ -85,26 +87,39 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
     public function store(Request $request)
     {
         $validated = $this->validateProduct($request);
+        $feeData = $this->extractFeeData($request);
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if ($feeData['fee_value'] > 0) {
+            ProductFee::create(array_merge($feeData, ['product_id' => $product->id]));
+        }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function edit(Product $product)
-    {
-        $categories = ProductCategory::orderBy('nama')->get();
-        $brands = ProductBrand::orderBy('nama')->get();
-        $suppliers = Supplier::orderBy('nama')->get();
+        {
+            $categories = ProductCategory::orderBy('nama')->get();
+            $brands = ProductBrand::orderBy('nama')->get();
+            $suppliers = Supplier::orderBy('nama')->get();
+            $product->load('fee');
 
-        return view('master.products.edit', compact('product', 'categories', 'brands', 'suppliers'));
-    }
+            return view('master.products.edit', compact('product', 'categories', 'brands', 'suppliers'));
+        }
 
     public function update(Request $request, Product $product)
     {
         $validated = $this->validateProduct($request);
+        $feeData = $this->extractFeeData($request);
 
         $product->update($validated);
+
+        if ($feeData['fee_value'] > 0) {
+            ProductFee::updateOrCreate(['product_id' => $product->id], $feeData);
+        } else {
+            ProductFee::where('product_id', $product->id)->delete();
+        }
 
         return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
     }
@@ -114,7 +129,18 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
         $product->delete();
         return back()->with('success', 'Produk berhasil dihapus.');
     }
+    private function extractFeeData(Request $request): array
+        {
+            $request->validate([
+                'fee_type' => 'nullable|in:percent,fixed',
+                'fee_value' => 'nullable|numeric|min:0',
+            ]);
 
+            return [
+                'fee_type' => $request->input('fee_type', 'fixed'),
+                'fee_value' => $request->input('fee_value', 0),
+            ];
+        }
     private function validateProduct(Request $request): array
     {
         return $request->validate([

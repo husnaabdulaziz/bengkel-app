@@ -62,8 +62,17 @@ Route::prefix('pos')->name('pos.')->group(function () {
     Route::get('/queue/{workOrder}/payment', [PosController::class, 'paymentForm'])->name('payment');
     Route::post('/queue/{workOrder}/payment', [PosController::class, 'confirmPayment'])->name('payment.confirm');
     Route::get('/invoice/{workOrder}', [PosController::class, 'invoice'])->name('invoice');
+    Route::post('/queue/{workOrder}/technicians', [PosController::class, 'updateTechnicians'])->name('queue.update-technicians');
 });
 
+use App\Http\Controllers\TechnicianFeeReportController;
+Route::get('reports/technician-fee', [TechnicianFeeReportController::class, 'index'])->name('reports.technician-fee');
+Route::get('reports/technician-fee/pdf', [TechnicianFeeReportController::class, 'pdf'])->name('reports.technician-fee.pdf');
 
+use App\Http\Controllers\TechnicianManualFeeController;
+Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store']);
+
+use App\Http\Controllers\TechnicianController;
+Route::resource('technicians', TechnicianController::class)->parameters(['technicians' => 'technician']);
 
 require __DIR__.'/auth.php';

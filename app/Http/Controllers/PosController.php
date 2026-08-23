@@ -9,6 +9,8 @@ use App\Models\WorkOrderItem;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Models\StockMovement;
+use App\Models\WorkOrderItemTechnician;
+use App\Models\ProductFee;
 use Illuminate\Support\Facades\DB;
 
 class PosController extends Controller
@@ -17,7 +19,8 @@ class PosController extends Controller
     public function create()
     {
         $branchId = session('active_branch_id') ?? auth()->user()->branches()->value('branches.id');
-        return view('pos.create', compact('branchId'));
+        $technicians = \App\Models\User::role('teknisi')->orderBy('name')->get(['id', 'name', 'inisial']);
+        return view('pos.create', compact('branchId', 'technicians'));
     }
 
     /** AJAX: cari pelanggan by nama/telpon/plat */
@@ -67,6 +70,9 @@ class PosController extends Controller
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
+            'technician_ids' => 'nullable|array',
+            'technician_ids.*' => 'exists:users,id',
+            'manual_fee' => 'nullable',
         ]);
 
         $workOrder = DB::transaction(function () use ($validated) {
@@ -94,9 +100,12 @@ class PosController extends Controller
                 'created_by' => auth()->id(),
             ]);
 
+            $isManualFee = !empty($validated['manual_fee']) && $validated['manual_fee'] != '0';
+            $technicianIds = $validated['technician_ids'] ?? [];
+
             foreach ($validated['items'] ?? [] as $item) {
                 $product = Product::find($item['product_id']);
-                WorkOrderItem::create([
+                $woItem = WorkOrderItem::create([
                     'work_order_id' => $workOrder->id,
                     'product_id' => $product->id,
                     'item_name' => $product->nama,
@@ -104,7 +113,16 @@ class PosController extends Controller
                     'unit_price' => $item['unit_price'],
                     'quantity' => $item['quantity'],
                     'subtotal' => $item['unit_price'] * $item['quantity'],
+                    'manual_fee' => $isManualFee,
                 ]);
+
+                foreach ($technicianIds as $techId) {
+                    WorkOrderItemTechnician::create([
+                        'work_order_item_id' => $woItem->id,
+                        'user_id' => $techId,
+                        'fee_amount' => 0,
+                    ]);
+                }
             }
 
             $workOrder->recalculateTotal();
@@ -203,10 +221,15 @@ class PosController extends Controller
 
     /** Tahap 2: detail 1 work order, bisa tambah item */
     public function showQueue(WorkOrder $workOrder)
-    {
-        $workOrder->load('items.product', 'customer');
-        return view('pos.queue-detail', compact('workOrder'));
-    }
+        {
+            $workOrder->load('items.product', 'customer');
+            $assignedTechnicians = $workOrder->assignedTechnicians();
+            $assignedTechnicianIds = $assignedTechnicians->pluck('id')->toArray();
+            $currentManualFee = (bool) $workOrder->items->first()?->manual_fee;
+            $technicians = \App\Models\User::role('teknisi')->orderBy('name')->get(['id', 'name', 'inisial']);
+
+            return view('pos.queue-detail', compact('workOrder', 'assignedTechnicians', 'assignedTechnicianIds', 'currentManualFee', 'technicians'));
+        }
 
     /** AJAX-style: tambah item ke work order yang sudah ada (masih di tahap draft/queue) */
     public function addItem(Request $request, WorkOrder $workOrder)
@@ -252,15 +275,15 @@ class PosController extends Controller
 
     /** Pindah dari draft -> queue (mulai diproses) */
     public function process(WorkOrder $workOrder)
-    {
-        if ($workOrder->stage !== 'draft') {
-            return back()->with('error', 'Work order ini bukan status draft.');
+        {
+            if ($workOrder->stage !== 'draft') {
+                return back()->with('error', 'Work order ini bukan status draft.');
+            }
+
+            $workOrder->update(['stage' => 'queue']);
+
+            return redirect()->route('pos.payment', $workOrder)->with('success', 'Servis mulai diproses, lanjut ke pembayaran.');
         }
-
-        $workOrder->update(['stage' => 'queue']);
-
-        return redirect()->route('pos.queue.show', $workOrder)->with('success', 'Servis mulai diproses.');
-    }
 
     /** Tahap 3: form pembayaran */
     public function paymentForm(WorkOrder $workOrder)
@@ -270,7 +293,8 @@ class PosController extends Controller
         }
 
         $workOrder->load('items', 'customer');
-        return view('pos.payment', compact('workOrder'));
+        $assignedTechnicians = $workOrder->assignedTechnicians();
+        return view('pos.payment', compact('workOrder', 'assignedTechnicians'));
     }
 
     /** Tahap 3: proses pembayaran, generate invoice, kurangi stock */
@@ -294,17 +318,27 @@ class PosController extends Controller
             $workOrder->recalculateTotal();
 
             foreach ($workOrder->items as $item) {
-                if (!$item->product || $item->product->is_jasa) continue;
+                if ($item->product && !$item->product->is_jasa) {
+                    StockMovement::create([
+                        'branch_id' => $workOrder->branch_id,
+                        'product_id' => $item->product_id,
+                        'type' => 'out',
+                        'quantity' => $item->quantity,
+                        'reference_type' => 'sale',
+                        'reference_id' => $workOrder->id,
+                        'notes' => 'Penjualan via POS',
+                    ]);
+                }
 
-                StockMovement::create([
-                    'branch_id' => $workOrder->branch_id,
-                    'product_id' => $item->product_id,
-                    'type' => 'out',
-                    'quantity' => $item->quantity,
-                    'reference_type' => 'sale',
-                    'reference_id' => $workOrder->id,
-                    'notes' => 'Penjualan via POS',
-                ]);
+                // Fee otomatis HANYA kalau: bukan manual_fee DAN cuma 1 teknisi ditugaskan
+                $technicianAssignments = WorkOrderItemTechnician::where('work_order_item_id', $item->id)->get();
+
+                if (!$item->manual_fee && $technicianAssignments->count() === 1) {
+                    $productFee = ProductFee::where('product_id', $item->product_id)->first();
+                    $feeAmount = $productFee ? $productFee->calculateFee($item->subtotal, $item->quantity) : 0;
+                    $technicianAssignments->first()->update(['fee_amount' => $feeAmount]);
+                }
+                // Kalau manual_fee true atau teknisi > 1: fee_amount tetap 0, diisi manual lewat menu "Input Fee Manual"
             }
 
             $invoiceNumber = 'INV-' . $workOrder->branch_id . '-' . now()->format('Ymd') . '-' . str_pad($workOrder->id, 4, '0', STR_PAD_LEFT);
@@ -329,4 +363,36 @@ class PosController extends Controller
         $workOrder->load('items', 'customer', 'branch.company');
         return view('pos.invoice', compact('workOrder'));
     }
+    /** Update pilihan mekanik untuk seluruh item di work order ini (masih bisa diubah selama draft/queue) */
+public function updateTechnicians(Request $request, WorkOrder $workOrder)
+{
+    if (!in_array($workOrder->stage, ['draft', 'queue'])) {
+        return back()->with('error', 'Mekanik tidak bisa diubah lagi pada tahap ini.');
+    }
+
+    $validated = $request->validate([
+        'technician_ids' => 'nullable|array',
+        'technician_ids.*' => 'exists:users,id',
+        'manual_fee' => 'nullable',
+    ]);
+
+    $isManualFee = !empty($validated['manual_fee']) && $validated['manual_fee'] != '0';
+    $technicianIds = $validated['technician_ids'] ?? [];
+
+    foreach ($workOrder->items as $item) {
+        WorkOrderItemTechnician::where('work_order_item_id', $item->id)->delete();
+
+        foreach ($technicianIds as $techId) {
+            WorkOrderItemTechnician::create([
+                'work_order_item_id' => $item->id,
+                'user_id' => $techId,
+                'fee_amount' => 0,
+            ]);
+        }
+
+        $item->update(['manual_fee' => $isManualFee]);
+    }
+
+    return back()->with('success', 'Mekanik berhasil diperbarui.');
+}
 }

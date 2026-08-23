@@ -10,6 +10,11 @@ class WorkOrderItemTechnician extends Model
 
     protected $fillable = ['work_order_item_id', 'user_id', 'fee_amount', 'fee_notes'];
 
-    public function item()      { return $this->belongsTo(WorkOrderItem::class, 'work_order_item_id'); }
-    public function technician(){ return $this->belongsTo(User::class, 'user_id'); }
+    protected function casts(): array
+    {
+        return ['fee_amount' => 'decimal:2'];
+    }
+
+    public function item()       { return $this->belongsTo(WorkOrderItem::class, 'work_order_item_id'); }
+    public function technician() { return $this->belongsTo(User::class, 'user_id'); }
 }

@@ -69,7 +69,21 @@
     <label class="block text-sm font-medium mb-1">Durasi Garansi (hari)</label>
     <input type="number" name="garansi_durasi_hari" value="{{ old('garansi_durasi_hari', $p?->garansi_durasi_hari) }}" class="border rounded px-3 py-2 w-full">
 </div>
-
+<hr class="my-2">
+<h3 class="font-semibold">Fee Teknisi (opsional)</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium mb-1">Jenis Fee</label>
+            <select name="fee_type" class="border rounded px-3 py-2 w-full">
+                <option value="fixed" @selected(old('fee_type', $p?->fee?->fee_type) === 'fixed')>Nominal Tetap (Rp)</option>
+                <option value="percent" @selected(old('fee_type', $p?->fee?->fee_type) === 'percent')>Persen dari Subtotal (%)</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Nilai Fee</label>
+            <input type="number" step="0.01" name="fee_value" value="{{ old('fee_value', $p?->fee?->fee_value ?? 0) }}" class="border rounded px-3 py-2 w-full">
+        </div>
+    </div>
 <hr class="my-2">
 <h3 class="font-semibold">Tarif Harga</h3>
 

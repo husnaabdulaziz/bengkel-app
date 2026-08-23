@@ -44,4 +44,14 @@ class WorkOrder extends Model
             'total_amount' => max($subtotal - $discount, 0),
         ]);
     }
+    public function assignedTechnicians()
+    {
+        return \App\Models\User::whereIn('id', function ($query) {
+            $query->select('user_id')
+                ->from('work_order_item_technicians')
+                ->whereIn('work_order_item_id', $this->items()->pluck('id'));
+        })->get();
+    }
+
+
 }
