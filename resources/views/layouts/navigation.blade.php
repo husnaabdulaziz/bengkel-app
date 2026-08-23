@@ -24,6 +24,9 @@
                     <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                         {{ __('Supplier') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                        {{ __('Produk') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -88,6 +91,9 @@
             <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
                 {{ __('Supplier') }}
             </x-responsive-nav-link>
+            <x-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                {{ __('Produk') }}
+            </x-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
