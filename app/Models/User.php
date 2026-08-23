@@ -2,31 +2,27 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable, HasRoles;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    protected $fillable = ['company_id','name','email','phone','password','is_super_admin','status'];
+    protected $hidden = ['password','remember_token'];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'is_super_admin' => 'boolean',
             'password' => 'hashed',
         ];
     }
+
+    public function company()  { return $this->belongsTo(Company::class); }
+    public function branches() { return $this->belongsToMany(Branch::class, 'user_branches'); }
+    public function isSuperAdmin(): bool { return (bool) $this->is_super_admin; }
 }
