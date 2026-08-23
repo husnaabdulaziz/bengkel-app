@@ -27,4 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
     Route::resource('products', ProductController::class)->except(['show']);
 });
+
+use App\Http\Controllers\PurchaseController;
+Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
 require __DIR__.'/auth.php';
