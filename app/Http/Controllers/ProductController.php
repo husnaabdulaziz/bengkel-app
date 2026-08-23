@@ -31,6 +31,48 @@ class ProductController extends Controller
         return view('master.products.index', compact('products', 'categories', 'brands'));
     }
 
+    /** JSON: data list produk untuk live filter (Alpine.js) */
+    public function data(Request $request)
+    {
+        $query = Product::with(['category', 'brand']);
+
+        if ($request->filled('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->filled('brand_id')) {
+            $query->where('brand_id', $request->brand_id);
+        }
+
+        $perPage = in_array((int) $request->get('per_page'), [10, 25, 50, 100]) ? (int) $request->get('per_page') : 10;
+$products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
+
+        $items = $products->getCollection()->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'nama' => $p->nama,
+                'is_jasa' => $p->is_jasa,
+                'category' => $p->category?->nama,
+                'brand' => $p->brand?->nama,
+                'harga_jual' => number_format($p->harga_jual, 0, ',', '.'),
+                'harga_jual_jasa' => number_format($p->harga_jual_jasa, 0, ',', '.'),
+                'harga_online' => number_format($p->harga_online, 0, ',', '.'),
+                'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
+                'edit_url' => route('products.edit', $p),
+                'delete_url' => route('products.destroy', $p),
+            ];
+        });
+
+        return response()->json([
+            'items' => $items,
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+            'total' => $products->total(),
+        ]);
+    }
+
     public function create()
     {
         $categories = ProductCategory::orderBy('nama')->get();

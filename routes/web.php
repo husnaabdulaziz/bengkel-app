@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('product-brands', ProductBrandController::class)->except(['show', 'create', 'edit']);
     Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
     Route::resource('products', ProductController::class)->except(['show']);
+    Route::get('products-data', [ProductController::class, 'data'])->name('products.data');
 });
 
 use App\Http\Controllers\PurchaseController;
