@@ -9,18 +9,31 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TechnicianFeeReportController extends Controller
 {
     public function index(Request $request)
     {
-        [$data, $start, $end, $period, $technicianId, $totalFee] = $this->getReportData($request);
+        [$allData, $start, $end, $period, $technicianId, $totalFee] = $this->getReportData($request);
+
+        $perPage = in_array((int) $request->get('per_page'), [10, 20, 50, 100]) ? (int) $request->get('per_page') : 10;
+        $currentPage = (int) $request->get('page', 1);
+
+        $paged = new LengthAwarePaginator(
+            $allData->forPage($currentPage, $perPage)->values(),
+            $allData->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         $technicians = User::role('teknisi')->orderBy('name')->get();
 
         return view('reports.technician-fee', [
-            'data' => $data, 'period' => $period, 'start' => $start, 'end' => $end,
+            'data' => $paged, 'period' => $period, 'start' => $start, 'end' => $end,
             'technicianId' => $technicianId, 'technicians' => $technicians, 'totalFee' => $totalFee,
+            'perPage' => $perPage,
         ]);
     }
 
@@ -75,6 +88,33 @@ class TechnicianFeeReportController extends Controller
         return $pdf->stream($filename);
     }
 
+    public function edit(WorkOrderItemTechnician $workOrderItemTechnician)
+    {
+        $workOrderItemTechnician->load('technician', 'item.product', 'item.workOrder');
+        return view('reports.technician-fee-edit', ['row' => $workOrderItemTechnician]);
+    }
+
+    public function updateFee(Request $request, WorkOrderItemTechnician $workOrderItemTechnician)
+    {
+        $validated = $request->validate([
+            'fee_amount' => 'required|numeric|min:0',
+            'fee_notes' => 'nullable|string|max:255',
+        ]);
+
+        $workOrderItemTechnician->update($validated);
+
+        $workOrderItemTechnician->item()->update(['manual_fee' => true]);
+
+        return back()->with('success', 'Fee berhasil diperbarui.');
+    }
+
+    public function destroy(WorkOrderItemTechnician $workOrderItemTechnician)
+    {
+        $workOrderItemTechnician->delete();
+        return back()->with('success', 'Data fee dihapus.');
+    }
+
+    /** Ambil SEMUA data sesuai filter (tanpa dipotong halaman) - dipakai baik untuk web (lalu dipaginasi) maupun PDF (full) */
     private function getReportData(Request $request): array
     {
         $period = $request->get('period', 'harian');
@@ -86,7 +126,6 @@ class TechnicianFeeReportController extends Controller
             default   => [now()->startOfDay(), now()->endOfDay()],
         };
 
-        // Fee otomatis dari transaksi POS
         $autoQuery = WorkOrderItemTechnician::with(['technician', 'item.product', 'item.workOrder'])
             ->whereHas('item.workOrder', function ($q) use ($start, $end) {
                 $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
@@ -98,15 +137,16 @@ class TechnicianFeeReportController extends Controller
 
         $autoFees = $autoQuery->get()->map(function ($row) {
             return (object) [
+                'id' => $row->id,
                 'technician' => $row->technician,
                 'product_name' => $row->item->item_name,
                 'notes' => $row->fee_notes,
                 'fee_amount' => $row->fee_amount,
                 'source' => 'otomatis',
+                'is_manual_case' => (bool) $row->item->manual_fee,
             ];
         });
 
-        // Fee input manual
         $manualQuery = TechnicianManualFee::with(['technician', 'product'])
             ->whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()]);
 
@@ -116,11 +156,13 @@ class TechnicianFeeReportController extends Controller
 
         $manualFees = $manualQuery->get()->map(function ($row) {
             return (object) [
+                'id' => $row->id,
                 'technician' => $row->technician,
                 'product_name' => $row->product?->nama ?? '-',
                 'notes' => $row->notes,
                 'fee_amount' => $row->fee_amount,
                 'source' => 'manual',
+                'is_manual_case' => true,
             ];
         });
 

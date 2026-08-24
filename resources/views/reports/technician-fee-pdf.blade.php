@@ -38,7 +38,7 @@
         <thead>
             <tr>
                 <th class="text-center" style="width:30px;">No</th>
-                <th>Teknisi</th>
+                <th>Mekanik</th>
                 <th>Produk</th>
                 <th>Keterangan</th>
                 <th class="text-right">Fee</th>

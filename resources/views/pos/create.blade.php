@@ -1,10 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">POS — Servis Baru</h2>
-    </x-slot>
+            </x-slot>
 
-    <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8"
-         x-data="posForm('{{ $branchId }}')">
+            <div class="py-6 max-w-6xl mx-auto sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-4 items-start"
+     x-data="posForm('{{ $branchId }}')">
+
+    <div class="order-2 lg:order-1 w-full lg:w-auto">
+        @include('pos.partials.orders-sidebar')
+    </div>
+
+    <div class="order-1 lg:order-2 flex-1 min-w-0 w-full">
 
         @if ($errors->any())
             <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
@@ -123,7 +129,7 @@
                 <template x-for="techId in selectedTechnicians" :key="techId">
                     <input type="hidden" name="technician_ids[]" :value="techId">
                 </template>
-                <input type="hidden" name="manual_fee" :value="manualFee ? 1 : 0">
+                <input type="hidden" name="manual_fee" :value="(manualFee || selectedTechnicians.length > 1) ? 1 : 0">
             </div>
             <!-- ===== BAGIAN ITEM PRODUK ===== -->
             <div class="bg-white p-6 rounded shadow mb-4">
@@ -134,8 +140,16 @@
                            placeholder="Cari produk untuk ditambahkan..." class="border rounded px-3 py-2 w-full" autocomplete="off">
                     <div x-show="productResults.length > 0" class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-60 overflow-y-auto">
                         <template x-for="p in productResults" :key="p.id">
-                            <div @click="addItem(p)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b flex justify-between">
-                                <span x-text="p.nama"></span>
+                            <div @click="!p.out_of_stock && addItem(p)"
+                                :class="p.out_of_stock ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 cursor-pointer'"
+                                class="p-2 text-sm border-b flex justify-between items-center">
+                                <div>
+                                    <span x-text="p.nama"></span>
+                                    <template x-if="!p.is_jasa">
+                                        <span class="text-xs ml-1" :class="p.out_of_stock ? 'text-red-600 font-semibold' : 'text-gray-400'"
+                                            x-text="p.out_of_stock ? '(Stok habis)' : '(Stok: ' + p.stock + ')'"></span>
+                                    </template>
+                                </div>
                                 <span class="text-gray-500" x-text="'Rp ' + priceForTier(p).toLocaleString('id-ID')"></span>
                             </div>
                         </template>
@@ -183,9 +197,10 @@
                 <div class="text-right font-semibold text-lg pt-3 border-t mt-2" x-text="'Total: Rp ' + total.toLocaleString('id-ID')"></div>
             </div>
 
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Simpan sebagai Draft</button>
-        </form>
-    </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Simpan sebagai Draft</button>
+            </form>
+                </div>
+            </div>
 
     @push('scripts')
     <script>
@@ -224,7 +239,7 @@
                     clearTimeout(this._debounce);
                     if (this.productQuery.length < 2) { this.productResults = []; return; }
                     this._debounce = setTimeout(() => {
-                        fetch(`{{ route('pos.search-product') }}?q=${encodeURIComponent(this.productQuery)}`)
+                        fetch(`{{ route('pos.search-product') }}?q=${encodeURIComponent(this.productQuery)}&branch_id=${this.branchId}`)
                             .then(r => r.json())
                             .then(data => this.productResults = data);
                     }, 300);

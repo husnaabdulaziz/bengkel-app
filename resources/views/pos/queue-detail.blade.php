@@ -28,8 +28,13 @@
     }
 </script>
 
-    <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8"
-     x-data="queueDetail({{ $workOrder->id }}, {{ json_encode($assignedTechnicianIds) }}, {{ $currentManualFee ? 'true' : 'false' }})">
+    <div class="py-6 max-w-6xl mx-auto sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-4 items-start">
+    <div class="order-2 lg:order-1 w-full lg:w-auto">
+        @include('pos.partials.orders-sidebar')
+    </div>
+
+    <div class="order-1 lg:order-2 flex-1 min-w-0 w-full"
+         x-data="queueDetail({{ $workOrder->id }}, {{ json_encode($assignedTechnicianIds) }}, {{ $currentManualFee ? 'true' : 'false' }})">
 
         @if (session('success'))
             <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
@@ -58,9 +63,17 @@
                 <input type="text" x-model="productQuery" @input="searchProducts" placeholder="Cari produk..." class="border rounded px-3 py-2 w-full" autocomplete="off">
                 <div x-show="productResults.length > 0" class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-60 overflow-y-auto">
                     <template x-for="p in productResults" :key="p.id">
-                        <div @click="submitAddItem(p)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b flex justify-between">
-                            <span x-text="p.nama"></span>
-                            <span class="text-gray-500" x-text="'Rp ' + parseFloat(p['{{ $workOrder->customer_price_tier }}'] ?? p.harga_jual).toLocaleString('id-ID')"></span>
+                        <div @click="!p.out_of_stock && addItem(p)"
+                            :class="p.out_of_stock ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100 cursor-pointer'"
+                            class="p-2 text-sm border-b flex justify-between items-center">
+                            <div>
+                                <span x-text="p.nama"></span>
+                                <template x-if="!p.is_jasa">
+                                    <span class="text-xs ml-1" :class="p.out_of_stock ? 'text-red-600 font-semibold' : 'text-gray-400'"
+                                        x-text="p.out_of_stock ? '(Stok habis)' : '(Stok: ' + p.stock + ')'"></span>
+                                </template>
+                            </div>
+                            <span class="text-gray-500" x-text="'Rp ' + priceForTier(p).toLocaleString('id-ID')"></span>
                         </div>
                     </template>
                 </div>
@@ -126,9 +139,10 @@
                     @endforeach
                 </div>
                 <label class="flex items-center gap-2 text-sm mb-3">
-                    <input type="checkbox" name="manual_fee" value="1" x-model="manualFee" :disabled="selectedTechnicians.length > 1">
+                    <input type="checkbox" x-model="manualFee" :disabled="selectedTechnicians.length > 1">
                     Input Fee Manual
                 </label>
+                <input type="hidden" name="manual_fee" :value="(manualFee || selectedTechnicians.length > 1) ? 1 : 0">
                 <p class="text-xs text-gray-400 mb-3" x-show="selectedTechnicians.length > 1">
                     Fee wajib diisi manual karena lebih dari 1 mekanik dipilih.
                 </p>
@@ -156,7 +170,7 @@
     <p class="text-green-700 font-medium">Transaksi ini sudah selesai dan lunas.</p>
 @endif
     </div>
-
+    </div>
     @push('scripts')
     <script>
         function queueDetail(workOrderId, initialTechnicianIds, initialManualFee) {
@@ -164,6 +178,25 @@
                 productQuery: '', productResults: [], _debounce: null,
                 selectedTechnicians: initialTechnicianIds,
                 manualFee: initialManualFee,
+
+                searchProducts() {
+                    clearTimeout(this._debounce);
+                    if (this.productQuery.length < 2) { this.productResults = []; return; }
+                    this._debounce = setTimeout(() => {
+                        fetch(`{{ route('pos.search-product') }}?q=${encodeURIComponent(this.productQuery)}&branch_id={{ $workOrder->branch_id }}`)
+                            .then(r => r.json())
+                            .then(data => this.productResults = data);
+                    }, 300);
+                },
+
+                submitAddItem(p) {
+                    const tier = '{{ $workOrder->customer_price_tier }}';
+                    const price = parseFloat(p[tier] ?? p.harga_jual);
+                    this.$refs.product_id.value = p.id;
+                    this.$refs.unit_price.value = price;
+                    document.getElementById('add-item-form').submit();
+                },
+
                 toggleTechnician(techId) {
                     const idx = this.selectedTechnicians.indexOf(techId);
                     if (idx === -1) this.selectedTechnicians.push(techId);

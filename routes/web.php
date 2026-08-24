@@ -70,9 +70,11 @@ Route::get('reports/technician-fee', [TechnicianFeeReportController::class, 'ind
 Route::get('reports/technician-fee/pdf', [TechnicianFeeReportController::class, 'pdf'])->name('reports.technician-fee.pdf');
 
 use App\Http\Controllers\TechnicianManualFeeController;
-Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store']);
+Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
 use App\Http\Controllers\TechnicianController;
 Route::resource('technicians', TechnicianController::class)->parameters(['technicians' => 'technician']);
-
+Route::patch('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'updateFee'])->name('reports.technician-fee.update');
+Route::get('reports/technician-fee/{workOrderItemTechnician}/edit', [TechnicianFeeReportController::class, 'edit'])->name('reports.technician-fee.edit');
+Route::delete('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'destroy'])->name('reports.technician-fee.destroy');
 require __DIR__.'/auth.php';

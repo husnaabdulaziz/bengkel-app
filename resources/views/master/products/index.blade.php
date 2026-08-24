@@ -43,6 +43,7 @@
                         <th class="p-3">Nama</th>
                         <th class="p-3">Kategori</th>
                         <th class="p-3">Brand</th>
+                        <th class="p-3 text-right">Stock</th>
                         <th class="p-3 text-right">Harga Jual</th>
                         <th class="p-3 text-right">Jual+Jasa</th>
                         <th class="p-3 text-right">Online</th>
@@ -52,10 +53,10 @@
                 </thead>
                 <tbody>
                     <template x-if="loading">
-                        <tr><td colspan="8" class="p-3 text-gray-400 text-center">Memuat...</td></tr>
+                        <tr><td colspan="9" class="p-3 text-gray-400 text-center">Memuat...</td></tr>
                     </template>
                     <template x-if="!loading && items.length === 0">
-                        <tr><td colspan="8" class="p-3 text-gray-500 text-center">Tidak ada produk yang cocok.</td></tr>
+                        <tr><td colspan="9" class="p-3 text-gray-500 text-center">Tidak ada produk yang cocok.</td></tr>
                     </template>
                     <template x-for="p in items" :key="p.id">
                         <tr class="border-t">
@@ -65,6 +66,14 @@
                             </td>
                             <td class="p-3" x-text="p.category || '-'"></td>
                             <td class="p-3" x-text="p.brand || '-'"></td>
+                            <td class="p-3 text-right">
+                                <template x-if="p.is_jasa">
+                                    <span class="text-gray-400">-</span>
+                                </template>
+                                <template x-if="!p.is_jasa">
+                                    <span :class="p.stock_total <= 0 ? 'text-red-600 font-semibold' : 'text-gray-700'" x-text="p.stock_total"></span>
+                                </template>
+                            </td>
                             <td class="p-3 text-right" x-text="p.harga_jual"></td>
                             <td class="p-3 text-right" x-text="p.harga_jual_jasa"></td>
                             <td class="p-3 text-right" x-text="p.harga_online"></td>

@@ -20,7 +20,14 @@ class PosController extends Controller
     {
         $branchId = session('active_branch_id') ?? auth()->user()->branches()->value('branches.id');
         $technicians = \App\Models\User::role('teknisi')->orderBy('name')->get(['id', 'name', 'inisial']);
-        return view('pos.create', compact('branchId', 'technicians'));
+
+        $drafts = WorkOrder::with('customer')
+            ->where('branch_id', $branchId)
+            ->where('stage', 'draft')
+            ->latest()
+            ->get();
+
+        return view('pos.create', compact('branchId', 'technicians', 'drafts'));
     }
 
     /** AJAX: cari pelanggan by nama/telpon/plat */
@@ -41,16 +48,33 @@ class PosController extends Controller
 
     /** AJAX: cari produk by nama untuk ditambahkan ke item */
     public function searchProduct(Request $request)
-    {
-        $q = $request->get('q', '');
+            {
+                $q = $request->get('q', '');
+                $branchId = $request->get('branch_id');
 
-        $products = Product::where('nama', 'like', "%{$q}%")
-            ->where('status', 'active')
-            ->limit(10)
-            ->get(['id', 'nama', 'satuan', 'harga_jual', 'harga_jual_jasa', 'harga_online', 'harga_ojol', 'is_jasa']);
+                $products = Product::where('nama', 'like', "%{$q}%")
+                    ->where('status', 'active')
+                    ->limit(10)
+                    ->get(['id', 'nama', 'satuan', 'harga_jual', 'harga_jual_jasa', 'harga_online', 'harga_ojol', 'is_jasa']);
 
-        return response()->json($products);
-    }
+                $result = $products->map(function ($p) use ($branchId) {
+                    $stock = ($p->is_jasa || !$branchId) ? null : $p->stockAtBranch((int) $branchId);
+                    return [
+                        'id' => $p->id,
+                        'nama' => $p->nama,
+                        'satuan' => $p->satuan,
+                        'harga_jual' => $p->harga_jual,
+                        'harga_jual_jasa' => $p->harga_jual_jasa,
+                        'harga_online' => $p->harga_online,
+                        'harga_ojol' => $p->harga_ojol,
+                        'is_jasa' => $p->is_jasa,
+                        'stock' => $stock,
+                        'out_of_stock' => !$p->is_jasa && $stock !== null && $stock <= 0,
+                    ];
+                });
+
+                return response()->json($result);
+            }
 
     /** Simpan sebagai draft (tahap 1 -> stage draft) */
     public function store(Request $request)
@@ -227,8 +251,9 @@ class PosController extends Controller
             $assignedTechnicianIds = $assignedTechnicians->pluck('id')->toArray();
             $currentManualFee = (bool) $workOrder->items->first()?->manual_fee;
             $technicians = \App\Models\User::role('teknisi')->orderBy('name')->get(['id', 'name', 'inisial']);
+            $otherOrders = $this->getOpenOrders($workOrder->branch_id, $workOrder->id);
 
-            return view('pos.queue-detail', compact('workOrder', 'assignedTechnicians', 'assignedTechnicianIds', 'currentManualFee', 'technicians'));
+            return view('pos.queue-detail', compact('workOrder', 'assignedTechnicians', 'assignedTechnicianIds', 'currentManualFee', 'technicians', 'otherOrders'));
         }
 
     /** AJAX-style: tambah item ke work order yang sudah ada (masih di tahap draft/queue) */
@@ -287,15 +312,17 @@ class PosController extends Controller
 
     /** Tahap 3: form pembayaran */
     public function paymentForm(WorkOrder $workOrder)
-    {
-        if ($workOrder->stage !== 'queue') {
-            return redirect()->route('pos.queue')->with('error', 'Work order ini belum siap dibayar.');
-        }
+        {
+            if ($workOrder->stage !== 'queue') {
+                return redirect()->route('pos.queue')->with('error', 'Work order ini belum siap dibayar.');
+            }
 
-        $workOrder->load('items', 'customer');
-        $assignedTechnicians = $workOrder->assignedTechnicians();
-        return view('pos.payment', compact('workOrder', 'assignedTechnicians'));
-    }
+            $workOrder->load('items', 'customer');
+            $assignedTechnicians = $workOrder->assignedTechnicians();
+            $otherOrders = $this->getOpenOrders($workOrder->branch_id, $workOrder->id);
+
+            return view('pos.payment', compact('workOrder', 'assignedTechnicians', 'otherOrders'));
+        }
 
     /** Tahap 3: proses pembayaran, generate invoice, kurangi stock */
     public function confirmPayment(Request $request, WorkOrder $workOrder)
@@ -395,4 +422,14 @@ public function updateTechnicians(Request $request, WorkOrder $workOrder)
 
     return back()->with('success', 'Mekanik berhasil diperbarui.');
 }
+private function getOpenOrders(int $branchId, ?int $excludeId = null)
+    {
+        return WorkOrder::with('customer')
+            ->where('branch_id', $branchId)
+            ->whereIn('stage', ['draft', 'queue'])
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->latest()
+            ->get();
+    }
+
 }

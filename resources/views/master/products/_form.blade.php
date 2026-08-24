@@ -70,7 +70,7 @@
     <input type="number" name="garansi_durasi_hari" value="{{ old('garansi_durasi_hari', $p?->garansi_durasi_hari) }}" class="border rounded px-3 py-2 w-full">
 </div>
 <hr class="my-2">
-<h3 class="font-semibold">Fee Teknisi (opsional)</h3>
+<h3 class="font-semibold">Fee Mekanik (opsional)</h3>
     <div class="grid grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium mb-1">Jenis Fee</label>

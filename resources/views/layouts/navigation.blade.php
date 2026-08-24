@@ -74,13 +74,13 @@
                     <!-- Laporan -->
                     <x-nav-link :href="route('reports.technician-fee')" :active="request()->routeIs('reports.technician-fee*')">
                         <svg class="w-4 h-4 me-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
-                        {{ __('Fee Teknisi') }}
+                        {{ __('Fee Mekanik') }}
                     </x-nav-link>
                     <x-nav-link :href="route('technician-manual-fees.index')" :active="request()->routeIs('technician-manual-fees.*')">
                         {{ __('Fee Manual') }}
                     </x-nav-link>
                     <x-nav-link :href="route('technicians.index')" :active="request()->routeIs('technicians.*')">
-                        {{ __('Teknisi') }}
+                        {{ __('Mekanik') }}
                     </x-nav-link>
                     <!-- Dropdown: POS -->
                     <div class="relative flex items-center" x-data="{ openPos: false }" @click.outside="openPos = false">
@@ -196,13 +196,13 @@
             <!-- Laporan -->
             <x-nav-link :href="route('reports.technician-fee')" :active="request()->routeIs('reports.technician-fee*')">
                 <svg class="w-4 h-4 me-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
-                {{ __('Fee Teknisi') }}
+                {{ __('Fee Mekanik') }}
             </x-nav-link>
             <x-nav-link :href="route('technician-manual-fees.index')" :active="request()->routeIs('technician-manual-fees.*')">
                 {{ __('Fee Manual') }}
             </x-nav-link>
             <x-nav-link :href="route('technicians.index')" :active="request()->routeIs('technicians.*')">
-                {{ __('Teknisi') }}
+                {{ __('Mekanik') }}
             </x-nav-link>
 
 

@@ -44,4 +44,12 @@ class TechnicianManualFeeController extends Controller
 
         return redirect()->route('technician-manual-fees.index')->with('success', 'Fee manual berhasil disimpan.');
     }
+    public function destroy(\App\Models\TechnicianManualFee $technicianManualFee)
+    {
+        $technicianManualFee->delete();
+        return back()->with('success', 'Data fee manual dihapus.');
+    }
+
+
+
 }

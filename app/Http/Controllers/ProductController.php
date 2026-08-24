@@ -52,20 +52,21 @@ class ProductController extends Controller
 $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
 
         $items = $products->getCollection()->map(function ($p) {
-            return [
-                'id' => $p->id,
-                'nama' => $p->nama,
-                'is_jasa' => $p->is_jasa,
-                'category' => $p->category?->nama,
-                'brand' => $p->brand?->nama,
-                'harga_jual' => number_format($p->harga_jual, 0, ',', '.'),
-                'harga_jual_jasa' => number_format($p->harga_jual_jasa, 0, ',', '.'),
-                'harga_online' => number_format($p->harga_online, 0, ',', '.'),
-                'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
-                'edit_url' => route('products.edit', $p),
-                'delete_url' => route('products.destroy', $p),
-            ];
-        });
+                return [
+                    'id' => $p->id,
+                    'nama' => $p->nama,
+                    'is_jasa' => $p->is_jasa,
+                    'category' => $p->category?->nama,
+                    'brand' => $p->brand?->nama,
+                    'harga_jual' => number_format($p->harga_jual, 0, ',', '.'),
+                    'harga_jual_jasa' => number_format($p->harga_jual_jasa, 0, ',', '.'),
+                    'harga_online' => number_format($p->harga_online, 0, ',', '.'),
+                    'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
+                    'stock_total' => $p->is_jasa ? null : $p->branchStocks()->sum('stock_qty'),
+                    'edit_url' => route('products.edit', $p),
+                    'delete_url' => route('products.destroy', $p),
+                ];
+            });
 
         return response()->json([
             'items' => $items,

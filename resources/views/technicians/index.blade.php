@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Teknisi</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Mekanik</h2>
     </x-slot>
 
     <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8">
@@ -10,7 +10,7 @@
         @endif
 
         <div class="flex justify-end mb-4">
-            <a href="{{ route('technicians.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Tambah Teknisi</a>
+            <a href="{{ route('technicians.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Tambah Mekanik</a>
         </div>
 
         <div class="bg-white rounded shadow overflow-hidden">
@@ -33,14 +33,14 @@
                             <td class="p-3">{{ $tech->email }}</td>
                             <td class="p-3">
                                 <a href="{{ route('technicians.edit', $tech) }}" class="text-blue-600 text-sm">Edit</a>
-                                <form method="POST" action="{{ route('technicians.destroy', $tech) }}" class="inline" onsubmit="return confirm('Hapus teknisi ini?')">
+                                <form method="POST" action="{{ route('technicians.destroy', $tech) }}" class="inline" onsubmit="return confirm('Hapus mekanik ini?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 text-sm ml-2">Hapus</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">Belum ada teknisi.</td></tr>
+                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">Belum ada mekanik.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -10,12 +10,19 @@
         @endif
 
         <div class="flex justify-between items-center mb-4">
-            <select onchange="window.location.href = this.value" class="border rounded px-3 py-2">
-                <option value="{{ route('technician-manual-fees.index') }}">Semua Mekanik</option>
-                @foreach ($technicians as $tech)
-                    <option value="{{ route('technician-manual-fees.index', ['technician_id' => $tech->id]) }}" @selected(request('technician_id') == $tech->id)>{{ $tech->name }}</option>
-                @endforeach
-            </select>
+            <div class="relative inline-block">
+                <select onchange="window.location.href = this.value"
+                        class="border rounded px-3 py-2 pr-8 bg-white"
+                        style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
+                    <option value="{{ route('technician-manual-fees.index') }}">Semua Mekanik</option>
+                    @foreach ($technicians as $tech)
+                        <option value="{{ route('technician-manual-fees.index', ['technician_id' => $tech->id]) }}" @selected(request('technician_id') == $tech->id)>{{ $tech->name }}</option>
+                    @endforeach
+                </select>
+                <svg class="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
             <a href="{{ route('technician-manual-fees.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Input Fee Manual</a>
         </div>
 

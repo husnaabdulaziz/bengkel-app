@@ -3,7 +3,12 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Pembayaran — {{ $workOrder->customer->nama }}</h2>
     </x-slot>
 
-    <div class="py-6 max-w-2xl mx-auto sm:px-6 lg:px-8"
+    <div class="py-6 max-w-6xl mx-auto sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-4 items-start">
+    <div class="order-2 lg:order-1 w-full lg:w-auto">
+        @include('pos.partials.orders-sidebar')
+    </div>
+
+    <div class="order-1 lg:order-2 flex-1 min-w-0 w-full lg:max-w-2xl"
          x-data="{
              discountType: '',
              discountValue: 0,
@@ -75,7 +80,8 @@
                 <div class="flex justify-between font-bold text-lg"><span>Total</span><span x-text="'Rp ' + total.toLocaleString('id-ID')"></span></div>
             </div>
 
-            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded w-full">Konfirmasi Pembayaran</button>
+                        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded w-full">Konfirmasi Pembayaran</button>
         </form>
+    </div>
     </div>
 </x-app-layout>
