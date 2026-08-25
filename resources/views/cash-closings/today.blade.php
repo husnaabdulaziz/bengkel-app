@@ -101,6 +101,11 @@
                     @endif
 
                     <p class="text-muted small mb-0">Ditutup oleh {{ $closing->closedBy?->name }} pada {{ $closing->closed_at?->format('d/m/Y H:i') }}</p>
+
+                    <form method="POST" action="{{ route('cash-closings.reopen', $closing) }}" class="mt-3" onsubmit="return confirm('Buka kembali kas ini? Data penutupan sebelumnya akan direset dan Anda perlu tutup kas ulang.')">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-warning btn-sm">Buka Kembali Kas</button>
+                    </form>
                 </div>
             </div>
         @endif

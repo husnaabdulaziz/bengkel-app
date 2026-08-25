@@ -102,5 +102,15 @@ Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 
 Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
 Route::get('reports/financial/sales-detail-excel', [FinancialReportController::class, 'salesDetailExcel'])->name('reports.financial.sales-detail-excel');
 Route::get('reports/financial/sales-detail', [FinancialReportController::class, 'salesDetailIndex'])->name('reports.financial.sales-detail');
+use App\Http\Controllers\WarrantyController;
+
+Route::get('warranties', [WarrantyController::class, 'index'])->name('warranties.index');
+Route::get('warranties/{warranty}', [WarrantyController::class, 'show'])->name('warranties.show');
+Route::post('warranties/{warranty}/claim', [WarrantyController::class, 'claim'])->name('warranties.claim');
+use App\Http\Controllers\CustomerController;
+
+Route::resource('customers', CustomerController::class)->only(['index', 'show', 'edit', 'update']);
+Route::get('customers-export', [CustomerController::class, 'export'])->name('customers.export');
+Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class, 'reopen'])->name('cash-closings.reopen');
 
 require __DIR__.'/auth.php';

@@ -79,6 +79,12 @@
                             <li class="nav-item"><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Vendor</p></a></li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('warranties.index') }}" class="nav-link {{ request()->routeIs('warranties.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-shield-alt"></i>
+                            <p>Garansi</p>
+                        </a>
+                    </li>
 
                     <li class="nav-item">
                         <a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}">
@@ -124,6 +130,12 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-address-book"></i>
+                            <p>Pelanggan</p>
+                        </a>
                     </li>
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('reports.financial*', 'expenses.*', 'reports.technician-fee*', 'cash-closings.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                         <a href="#" class="nav-link" @click.prevent="open = !open">

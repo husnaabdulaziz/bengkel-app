@@ -20,13 +20,30 @@ class CashClosingController extends Controller
             ->where('closing_date', now()->toDateString())
             ->first();
 
-        if ($closing) {
+        if ($closing && $closing->status === 'open') {
             $this->refreshComputedFields($closing);
         }
 
         return view('cash-closings.today', compact('closing', 'branches', 'branchId'));
     }
 
+    public function reopen(CashClosing $cashClosing)
+    {
+        if ($cashClosing->status !== 'closed') {
+            return back()->with('error', 'Kas ini belum ditutup.');
+        }
+
+        $cashClosing->update([
+            'status' => 'open',
+            'actual_balance' => null,
+            'difference' => null,
+            'closed_by' => null,
+            'closed_at' => null,
+        ]);
+
+        return redirect()->route('cash-closings.today', ['branch_id' => $cashClosing->branch_id])
+            ->with('success', 'Kas berhasil dibuka kembali.');
+    }
     /** Buka kas: input saldo awal / uang kecil */
     public function open(Request $request)
     {
