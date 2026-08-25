@@ -115,5 +115,9 @@ Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class,
 use App\Http\Controllers\ActivityLogController;
 
 Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+use App\Http\Controllers\SettingController;
+
+Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
 require __DIR__.'/auth.php';

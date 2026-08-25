@@ -5,7 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Bengkel') }} - {{ $title ?? 'Dashboard' }}</title>
-    <style>[x-cloak] { display: none !important; }</style>
+
+    @php
+        $colorDefaults = [
+            'primary_color'      => '#007bff',
+            'link_color'         => '#007bff',
+            'active_menu_color'  => '#ffc107',
+            'sidebar_color'      => '#343a40',
+            'success_color'      => '#28a745',
+            'danger_color'       => '#dc3545',
+            'warning_color'      => '#ffc107',
+            'hover_color'        => '#f4f4f4',
+            'brand_bg_color'     => '#ffc107',
+            'brand_text_color'   => '#1f2d3d',
+        ];
+        $themeColors = $colorDefaults;
+        if (auth()->check()) {
+            $saved = \App\Models\StoreSetting::where('company_id', auth()->user()->company_id)
+                ->whereNull('branch_id')
+                ->whereIn('setting_key', array_keys($colorDefaults))
+                ->pluck('setting_value', 'setting_key');
+            $themeColors = array_merge($colorDefaults, $saved->toArray());
+        }
+    @endphp
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Sidebar */
+        .main-sidebar { background-color: {{ $themeColors['sidebar_color'] }} !important; }
+        /* Logo & Nama Toko */
+        .brand-link { background-color: {{ $themeColors['brand_bg_color'] }} !important; }
+        .brand-link .brand-text { color: {{ $themeColors['brand_text_color'] }} !important; }
+
+        /* Menu aktif */
+        .nav-sidebar > .nav-item > .nav-link.active,
+        .nav-sidebar .nav-treeview .nav-link.active {
+            background-color: {{ $themeColors['active_menu_color'] }} !important;
+            color: #1f2d3d !important;
+        }
+        .nav-sidebar > .nav-item > .nav-link.active .nav-icon,
+        .nav-sidebar .nav-treeview .nav-link.active .nav-icon,
+        .nav-sidebar .nav-treeview .nav-link.active .far {
+            color: #1f2d3d !important;
+        }
+
+        /* Warna Hover */
+        .nav-sidebar .nav-link:not(.active):hover {
+            background-color: {{ $themeColors['hover_color'] }} !important;
+        }
+        .table-hover tbody tr:hover {
+            background-color: {{ $themeColors['hover_color'] }} !important;
+        }
+        .list-group-item-action:hover {
+            background-color: {{ $themeColors['hover_color'] }} !important;
+        }
+
+        /* Paksa menu sidebar tetap horizontal di semua ukuran layar */
+        .nav-sidebar .nav-link { display: flex !important; flex-direction: row !important; align-items: center !important; }
+        .nav-sidebar .nav-link .nav-icon, .nav-sidebar .nav-link .far { margin-right: 0.5rem; flex-shrink: 0; }
+        .nav-sidebar .nav-link p { margin: 0 !important; white-space: normal; }
+
+        /* Warna Utama */
+        .btn-primary { background-color: {{ $themeColors['primary_color'] }} !important; border-color: {{ $themeColors['primary_color'] }} !important; }
+        .btn-outline-primary { color: {{ $themeColors['primary_color'] }} !important; border-color: {{ $themeColors['primary_color'] }} !important; }
+        .btn-outline-primary:hover { background-color: {{ $themeColors['primary_color'] }} !important; color: #fff !important; }
+        .badge-primary { background-color: {{ $themeColors['primary_color'] }} !important; }
+        .page-item.active .page-link { background-color: {{ $themeColors['primary_color'] }} !important; border-color: {{ $themeColors['primary_color'] }} !important; }
+        .custom-control-input:checked ~ .custom-control-label::before { background-color: {{ $themeColors['primary_color'] }} !important; border-color: {{ $themeColors['primary_color'] }} !important; }
+
+        /* Warna Link */
+        a, .page-link { color: {{ $themeColors['link_color'] }}; }
+        a:hover, .page-link:hover { color: {{ $themeColors['link_color'] }}; opacity: 0.85; }
+
+        /* Warna Sukses */
+        .btn-success { background-color: {{ $themeColors['success_color'] }} !important; border-color: {{ $themeColors['success_color'] }} !important; }
+        .btn-outline-success { color: {{ $themeColors['success_color'] }} !important; border-color: {{ $themeColors['success_color'] }} !important; }
+        .badge-success { background-color: {{ $themeColors['success_color'] }} !important; }
+        .alert-success { background-color: {{ $themeColors['success_color'] }}22; border-color: {{ $themeColors['success_color'] }}; color: {{ $themeColors['success_color'] }}; }
+        .text-success { color: {{ $themeColors['success_color'] }} !important; }
+        .small-box.bg-success { background-color: {{ $themeColors['success_color'] }} !important; }
+
+        /* Warna Bahaya */
+        .btn-danger { background-color: {{ $themeColors['danger_color'] }} !important; border-color: {{ $themeColors['danger_color'] }} !important; }
+        .btn-outline-danger { color: {{ $themeColors['danger_color'] }} !important; border-color: {{ $themeColors['danger_color'] }} !important; }
+        .btn-outline-danger:hover { background-color: {{ $themeColors['danger_color'] }} !important; color: #fff !important; }
+        .badge-danger { background-color: {{ $themeColors['danger_color'] }} !important; }
+        .alert-danger { background-color: {{ $themeColors['danger_color'] }}22; border-color: {{ $themeColors['danger_color'] }}; color: {{ $themeColors['danger_color'] }}; }
+        .text-danger { color: {{ $themeColors['danger_color'] }} !important; }
+        .small-box.bg-danger { background-color: {{ $themeColors['danger_color'] }} !important; }
+
+        /* Warna Peringatan */
+        .btn-warning { background-color: {{ $themeColors['warning_color'] }} !important; border-color: {{ $themeColors['warning_color'] }} !important; }
+        .badge-warning { background-color: {{ $themeColors['warning_color'] }} !important; }
+        .alert-warning { background-color: {{ $themeColors['warning_color'] }}22; border-color: {{ $themeColors['warning_color'] }}; color: #664d03; }
+        .small-box.bg-warning { background-color: {{ $themeColors['warning_color'] }} !important; }
+    </style>
+
     @vite(['resources/css/adminlte.css', 'resources/js/adminlte.js'])
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" x-data="{ userMenuOpen: false }"
@@ -43,8 +138,11 @@
 
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="{{ route('dashboard') }}" class="brand-link">
-            <span class="brand-text font-weight-light">Bengkel Jaya</span>
+        <a href="{{ route('dashboard') }}" class="brand-link d-flex flex-column align-items-center justify-content-center py-2">
+            @if (auth()->user()->company?->logo_path)
+                <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="Logo" class="mb-1" style="max-width: 70%; max-height: 60px; object-fit: contain;">
+            @endif
+            <span class="brand-text font-weight-bold text-center" style="font-size: 0.95rem; line-height: 1.2;">{{ auth()->user()->company?->nama_toko ?? config('app.name') }}</span>
         </a>
 
         <div class="sidebar">
@@ -179,6 +277,12 @@
                         <a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-history"></i>
                             <p>Log Aktivitas</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('settings.edit') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Pengaturan Toko</p>
                         </a>
                     </li>
                 </ul>

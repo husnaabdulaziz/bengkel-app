@@ -28,7 +28,7 @@ trait LogsActivity
             return;
         }
 
-        $label = $this->nama ?? $this->name ?? $this->kode_opname ?? $this->kode_transfer ?? $this->invoice_number ?? $this->id;
+        $label = $this->nama ?? $this->name ?? $this->nama_toko ?? $this->kode_opname ?? $this->kode_transfer ?? $this->invoice_number ?? $this->id;
         $verb = ['create' => 'Menambahkan', 'update' => 'Mengubah', 'delete' => 'Menghapus'][$action] ?? $action;
         $modelName = Str::title(str_replace('_', ' ', Str::snake(class_basename($this))));
 

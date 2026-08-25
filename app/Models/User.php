@@ -10,7 +10,7 @@ class User extends Authenticatable
 {
     use Notifiable, HasRoles;
 
-    protected $fillable = ['company_id','name','inisial','email','phone','password','is_super_admin','status'];
+    protected $fillable = ['company_id','name','username','inisial','email','phone','password','is_super_admin','status'];
     protected $hidden = ['password','remember_token'];
 
     protected function casts(): array
