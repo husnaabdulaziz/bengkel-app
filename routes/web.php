@@ -94,6 +94,12 @@ Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 
 Route::get('reports/financial', [FinancialReportController::class, 'index'])->name('reports.financial');
 Route::get('reports/financial/pdf', [FinancialReportController::class, 'pdf'])->name('reports.financial.pdf');
 Route::get('reports/financial/excel', [FinancialReportController::class, 'excel'])->name('reports.financial.excel');
+use App\Http\Controllers\CashClosingController;
+
+Route::get('cash-closings/today', [CashClosingController::class, 'today'])->name('cash-closings.today');
+Route::post('cash-closings/open', [CashClosingController::class, 'open'])->name('cash-closings.open');
+Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
+Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
 
     
 require __DIR__.'/auth.php';

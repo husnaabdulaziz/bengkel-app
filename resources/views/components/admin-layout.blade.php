@@ -131,6 +131,12 @@
                             <p>Laporan Keuangan</p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('cash-closings.today') }}" class="nav-link {{ request()->routeIs('cash-closings.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-cash-register"></i>
+                            <p>Kas Harian</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
