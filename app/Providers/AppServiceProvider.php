@@ -7,6 +7,9 @@ use App\Models\Company;
 use App\Observers\CompanyObserver;
 use App\Models\StockMovement;
 use App\Observers\StockMovementObserver;
+use Illuminate\Auth\Events\Login;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Event;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +28,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Company::observe(CompanyObserver::class);
         StockMovement::observe(StockMovementObserver::class);
+
+        Event::listen(Login::class, function (Login $event) {
+            ActivityLog::create([
+                'company_id' => $event->user->company_id,
+                'user_id' => $event->user->id,
+                'action' => 'login',
+                'description' => $event->user->name . ' login ke sistem',
+                'ip_address' => request()->ip(),
+            ]);
+        });
     }
 }

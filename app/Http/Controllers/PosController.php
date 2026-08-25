@@ -458,6 +458,16 @@ class PosController extends Controller
             ]);
 
             $workOrder->customer->update(['last_visit_at' => now()]);
+            \App\Models\ActivityLog::create([
+            'company_id' => auth()->user()->company_id,
+            'branch_id' => $workOrder->branch_id,
+            'user_id' => auth()->id(),
+            'action' => 'pos_payment',
+            'model_type' => \App\Models\WorkOrder::class,
+            'model_id' => $workOrder->id,
+            'description' => "Transaksi {$workOrder->invoice_number} senilai Rp " . number_format($workOrder->total_amount, 0, ',', '.') . ' dibayar ' . $workOrder->payment_method,
+            'ip_address' => request()->ip(),
+        ]);
         });
 
         return redirect()->route('pos.queue')->with('success', 'Pembayaran berhasil.')->with('print_invoice_id', $workOrder->id);

@@ -68,6 +68,14 @@ class CashClosingController extends Controller
             'opened_by' => auth()->id(),
         ]);
 
+        \App\Models\ActivityLog::create([
+            'company_id' => auth()->user()->company_id,
+            'branch_id' => $validated['branch_id'],
+            'user_id' => auth()->id(),
+            'action' => 'cash_open',
+            'description' => 'Membuka kas dengan saldo awal Rp ' . number_format($validated['opening_balance'], 0, ',', '.'),
+            'ip_address' => request()->ip(),
+        ]);
         return redirect()->route('cash-closings.today', ['branch_id' => $validated['branch_id']])
             ->with('success', 'Kas hari ini berhasil dibuka.');
     }
@@ -96,7 +104,15 @@ class CashClosingController extends Controller
             'closed_by' => auth()->id(),
             'closed_at' => now(),
         ]);
-
+        
+        \App\Models\ActivityLog::create([
+            'company_id' => auth()->user()->company_id,
+            'branch_id' => $cashClosing->branch_id,
+            'user_id' => auth()->id(),
+            'action' => 'cash_close',
+            'description' => 'Menutup kas, selisih Rp ' . number_format($difference, 0, ',', '.'),
+            'ip_address' => request()->ip(),
+        ]);
         return redirect()->route('cash-closings.today', ['branch_id' => $cashClosing->branch_id])
             ->with('success', 'Kas hari ini berhasil ditutup.');
     }

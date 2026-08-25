@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class StockTransfer extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
 
     public $timestamps = false;
 

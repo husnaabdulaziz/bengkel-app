@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    use BelongsToCompany;
+    use BelongsToCompany, LogsActivity;
+    
 
     protected $fillable = [
         'company_id', 'category_id', 'brand_id', 'default_supplier_id',

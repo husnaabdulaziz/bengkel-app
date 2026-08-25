@@ -112,5 +112,8 @@ use App\Http\Controllers\CustomerController;
 Route::resource('customers', CustomerController::class)->only(['index', 'show', 'edit', 'update']);
 Route::get('customers-export', [CustomerController::class, 'export'])->name('customers.export');
 Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class, 'reopen'])->name('cash-closings.reopen');
+use App\Http\Controllers\ActivityLogController;
+
+Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 
 require __DIR__.'/auth.php';
