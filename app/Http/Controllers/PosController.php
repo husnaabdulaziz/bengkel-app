@@ -196,7 +196,8 @@ class PosController extends Controller
             });
         }
 
-        $workOrders = $query->latest()->paginate(20)->withQueryString();
+        $perPage = in_array((int) $request->get('per_page'), [10, 20, 50, 100]) ? (int) $request->get('per_page') : 10;
+        $workOrders = $query->latest()->paginate($perPage)->withQueryString();
 
         $items = $workOrders->getCollection()->map(function ($wo) {
             return [
@@ -218,6 +219,7 @@ class PosController extends Controller
             'items' => $items,
             'current_page' => $workOrders->currentPage(),
             'last_page' => $workOrders->lastPage(),
+            'total' => $workOrders->total(),
         ]);
     }
 

@@ -1,11 +1,14 @@
 <x-admin-layout title="Detail Servis">
 
     <div class="row" x-data="queueDetail({{ $workOrder->id }}, {{ json_encode($assignedTechnicianIds) }}, {{ $currentManualFee ? 'true' : 'false' }})">
-        <div class="col-lg-3 order-2 order-lg-1">
-            @include('pos.partials.orders-sidebar')
-        </div>
-
-        <div class="col-lg-9 order-1 order-lg-2">
+        @if ($workOrder->stage !== 'completed')
+            <div class="col-lg-3 order-2 order-lg-1">
+                @include('pos.partials.orders-sidebar')
+            </div>
+            <div class="col-lg-9 order-1 order-lg-2">
+            @else
+            <div class="col-lg-12">
+            @endif
 
             <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>

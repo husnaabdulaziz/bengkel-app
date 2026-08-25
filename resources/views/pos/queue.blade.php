@@ -14,13 +14,21 @@
         </div>
 
         <!-- Search -->
-        <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                </div>
+                <input type="text" x-model="search" @input.debounce.400ms="page = 1; load()"
+                    placeholder="Cari no invoice, pelanggan, atau nomor plat..." class="form-control">
+                <div class="input-group-append">
+                    <select x-model="perPage" @change="page = 1; load()" class="form-control" style="max-width: 130px;">
+                        <option value="10">10 / halaman</option>
+                        <option value="20">20 / halaman</option>
+                        <option value="50">50 / halaman</option>
+                        <option value="100">100 / halaman</option>
+                    </select>
+                </div>
             </div>
-            <input type="text" x-model="search" @input.debounce.400ms="page = 1; load()"
-                   placeholder="Cari no invoice, pelanggan, atau nomor plat..." class="form-control">
-        </div>
 
         <!-- Status Tabs -->
         <ul class="nav nav-pills mb-3">
@@ -74,15 +82,24 @@
         </div>
 
         <!-- Pagination -->
-        <nav x-show="lastPage > 1" class="mt-3">
-            <ul class="pagination justify-content-center">
-                <template x-for="p in lastPage" :key="p">
-                    <li class="page-item" :class="page === p ? 'active' : ''">
-                        <a href="#" class="page-link" @click.prevent="page = p; load()" x-text="p"></a>
-                    </li>
-                </template>
-            </ul>
-        </nav>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small" x-text="`Menampilkan ${items.length} dari ${totalItems} data`"></span>
+                <nav x-show="lastPage > 1">
+                    <ul class="pagination mb-0">
+                        <li class="page-item" :class="page === 1 ? 'disabled' : ''">
+                            <a href="#" class="page-link" @click.prevent="page = Math.max(1, page - 1); load()">‹</a>
+                        </li>
+                        <template x-for="p in pageNumbers" :key="p">
+                            <li class="page-item" :class="page === p ? 'active' : ''">
+                                <a href="#" class="page-link" @click.prevent="page = p; load()" x-text="p"></a>
+                            </li>
+                        </template>
+                        <li class="page-item" :class="page === lastPage ? 'disabled' : ''">
+                            <a href="#" class="page-link" @click.prevent="page = Math.min(lastPage, page + 1); load()">›</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
     </div>
 
     @if (session('print_invoice_id'))
@@ -101,8 +118,20 @@
     <script>
         function posQueue() {
             return {
-                status: 'all', search: '', page: 1,
-                counts: {}, items: [], lastPage: 1, loading: false,
+                status: 'all', search: '', page: 1, perPage: 10,
+                counts: {}, items: [], lastPage: 1, totalItems: 0, loading: false,
+                                badgeLabel(stage) {
+                    return { draft: 'Draft', queue: 'Antrian', completed: 'Selesai' }[stage] ?? stage;
+                },
+                get pageNumbers() {
+                    const pages = [];
+                    const maxShown = 5;
+                    let startPage = Math.max(1, this.page - Math.floor(maxShown / 2));
+                    let endPage = Math.min(this.lastPage, startPage + maxShown - 1);
+                    startPage = Math.max(1, endPage - maxShown + 1);
+                    for (let i = startPage; i <= endPage; i++) pages.push(i);
+                    return pages;
+                },
                 tabs: [
                     { key: 'all', label: 'Semua' },
                     { key: 'draft', label: 'Draft' },
@@ -118,9 +147,10 @@
                 load() {
                     this.loading = true;
                     const params = new URLSearchParams();
-                    if (this.status !== 'all') params.set('status', this.status);
-                    if (this.search) params.set('search', this.search);
-                    if (this.page > 1) params.set('page', this.page);
+                        if (this.status !== 'all') params.set('status', this.status);
+                        if (this.search) params.set('search', this.search);
+                        params.set('per_page', this.perPage);
+                        if (this.page > 1) params.set('page', this.page);
 
                     fetch(`{{ route('pos.queue.data') }}?${params.toString()}`)
                         .then(r => r.json())
@@ -128,6 +158,7 @@
                             this.counts = data.counts;
                             this.items = data.items;
                             this.lastPage = data.last_page;
+                            this.totalItems = data.total;
                             this.loading = false;
                         });
                 },

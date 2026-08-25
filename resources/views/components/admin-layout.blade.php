@@ -50,8 +50,8 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {{ request()->routeIs('products.*', 'product-categories.*', 'product-subcategories.*', 'product-brands.*', 'suppliers.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link">
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('products.*', 'product-categories.*', 'product-subcategories.*', 'product-brands.*', 'suppliers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                        <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-box"></i>
                             <p>Produk <i class="right fas fa-angle-left"></i></p>
                         </a>
@@ -71,23 +71,23 @@
                         </a>
                     </li>
 
-                    <li class="nav-item {{ request()->routeIs('stock-opnames.*', 'stock-transfers.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-boxes"></i>
-                            <p>Stock <i class="right fas fa-angle-left"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('stock-opnames.*', 'stock-transfers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                    <a href="#" class="nav-link" @click.prevent="open = !open">
+                        <i class="nav-icon fas fa-boxes"></i>
+                        <p>Stock <i class="right fas fa-angle-left"></i></p>
+                    </a>
+                    <ul class="nav nav-treeview">
                             <li class="nav-item"><a href="{{ route('stock-opnames.index') }}" class="nav-link {{ request()->routeIs('stock-opnames.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Stock Opname</p></a></li>
                             <li class="nav-item"><a href="{{ route('stock-transfers.index') }}" class="nav-link {{ request()->routeIs('stock-transfers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Transfer Stock</p></a></li>
                         </ul>
                     </li>
 
-                    <li class="nav-item {{ request()->routeIs('pos.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-cash-register"></i>
-                            <p>POS <i class="right fas fa-angle-left"></i></p>
-                        </a>
-                        <ul class="nav nav-treeview">
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('pos.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                            <a href="#" class="nav-link" @click.prevent="open = !open">
+                                <i class="nav-icon fas fa-cash-register"></i>
+                                <p>POS <i class="right fas fa-angle-left"></i></p>
+                            </a>
+                            <ul class="nav nav-treeview">
                             <li class="nav-item"><a href="{{ route('pos.create') }}" class="nav-link {{ request()->routeIs('pos.create') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Tambah Transaksi</p></a></li>
                             <li class="nav-item"><a href="{{ route('pos.queue') }}" class="nav-link {{ request()->routeIs('pos.queue') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Daftar Transaksi</p></a></li>
                         </ul>
