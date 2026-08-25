@@ -1,10 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Catat Pembelian dari vendor</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Catat Pembelian dari Vendor</h2>
     </x-slot>
 
     <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8">
-
         @if ($errors->any())
             <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
                 <ul class="list-disc list-inside text-sm">
@@ -16,19 +15,12 @@
         @endif
 
         <form method="POST" action="{{ route('purchases.store') }}"
-              x-data="{
-                  items: [{ product_id: '', quantity: 1, price_per_unit: 0 }],
-                  products: {{ $products->map(fn($p) => ['id' => $p->id, 'nama' => $p->nama, 'satuan' => $p->satuan, 'harga_modal' => (float) $p->harga_modal])->toJson() }},
-                  addItem() { this.items.push({ product_id: '', quantity: 1, price_per_unit: 0 }) },
-                  removeItem(i) { this.items.splice(i, 1) },
-                  fillPrice(i) {
-                      const p = this.products.find(p => p.id == this.items[i].product_id);
-                      if (p) this.items[i].price_per_unit = p.harga_modal;
-                  },
-                  get total() {
-                      return this.items.reduce((sum, it) => sum + (it.quantity * it.price_per_unit), 0);
-                  }
-              }"
+              x-data="purchaseForm(
+                  {{ $products->map(fn($p) => ['id' => $p->id, 'nama' => $p->nama, 'satuan' => $p->satuan, 'harga_modal' => (float) $p->harga_modal])->values()->toJson() }},
+                  {{ $suppliers->map(fn($s) => ['id' => $s->id, 'nama' => $s->nama])->values()->toJson() }},
+                  {{ (int) old('supplier_id', 0) }},
+                  '{{ addslashes(old('supplier_nama', '')) }}'
+              )"
               class="bg-white p-6 rounded shadow space-y-4">
             @csrf
 
@@ -42,15 +34,28 @@
                         @endforeach
                     </select>
                 </div>
+
                 <div>
                     <label class="block text-sm font-medium mb-1">Vendor</label>
-                    <select name="supplier_id" required class="border rounded px-3 py-2 w-full">
-                        <option value="">- Pilih Vendor -</option>
-                        @foreach ($suppliers as $supplier)
-                            <option value="{{ $supplier->id }}">{{ $supplier->nama }}</option>
-                        @endforeach
-                    </select>
+                    <div class="relative">
+                        <input type="text" x-model="supplierQuery" @input="filterSuppliers" @focus="filterSuppliers"
+                               placeholder="Ketik atau pilih..." autocomplete="off"
+                               class="border rounded px-3 py-2 w-full">
+                        <input type="hidden" name="supplier_id" :value="selectedSupplierId" required>
+                        <div x-show="supplierResults.length > 0 || (supplierQuery.length > 0 && !supplierExactMatch)"
+                             @click.outside="supplierResults = []" x-cloak
+                             class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                            <template x-for="item in supplierResults" :key="item.id">
+                                <div @click="selectSupplier(item)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b" x-text="item.nama"></div>
+                            </template>
+                            <div x-show="supplierQuery.length > 0 && !supplierExactMatch"
+                                 @click="addSupplier()" class="p-2 hover:bg-blue-50 cursor-pointer text-sm text-blue-600">
+                                + Tambah "<span x-text="supplierQuery"></span>" sebagai vendor baru
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <div>
                     <label class="block text-sm font-medium mb-1">No. Invoice Vendor</label>
                     <input type="text" name="invoice_number" required class="border rounded px-3 py-2 w-full">
@@ -66,14 +71,25 @@
 
             <template x-for="(item, index) in items" :key="index">
                 <div class="grid grid-cols-12 gap-2 items-end">
-                    <div class="col-span-5">
+                    <div class="col-span-5 relative">
                         <label class="block text-xs mb-1">Produk</label>
-                        <select :name="`items[${index}][product_id]`" x-model="item.product_id" @change="fillPrice(index)" required class="border rounded px-2 py-2 w-full text-sm">
-                            <option value="">- Pilih Produk -</option>
-                            <template x-for="p in products" :key="p.id">
-                                <option :value="p.id" x-text="p.nama + ' (' + p.satuan + ')'"></option>
+                        <input type="text" x-model="item.productQuery" @input="filterProducts(item)" @focus="filterProducts(item)"
+                               placeholder="Ketik nama produk..." autocomplete="off"
+                               class="border rounded px-2 py-2 w-full text-sm">
+                        <input type="hidden" :name="`items[${index}][product_id]`" :value="item.product_id" required>
+                        <div x-show="item.results && item.results.length > 0"
+                             @click.outside="item.results = []" x-cloak
+                             class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                            <template x-for="p in item.results" :key="p.id">
+                                <div @click="selectProduct(item, p)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b">
+                                    <span x-text="p.nama"></span>
+                                    <span class="text-gray-400 text-xs" x-text="'(' + p.satuan + ')'"></span>
+                                </div>
                             </template>
-                        </select>
+                        </div>
+                        <p class="text-xs text-red-500 mt-1" x-show="item.productQuery.length > 1 && item.results.length === 0 && !item.product_id">
+                            Tidak ditemukan. <a href="{{ route('products.create') }}" target="_blank" class="underline">Tambah produk baru</a>
+                        </p>
                     </div>
                     <div class="col-span-2">
                         <label class="block text-xs mb-1">Qty</label>
@@ -85,7 +101,7 @@
                     </div>
                     <div class="col-span-1 text-sm font-medium text-gray-600" x-text="'Rp ' + (item.quantity * item.price_per_unit).toLocaleString('id-ID')"></div>
                     <div class="col-span-1">
-                        <button type="button" @click="removeItem(index)" class="text-red-600 text-sm">Hapus</button>
+                        <button type="button" @click="items.splice(index, 1)" class="text-red-600 text-sm">Hapus</button>
                     </div>
                 </div>
             </template>
@@ -97,4 +113,73 @@
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Simpan Pembelian</button>
         </form>
     </div>
+
+    @push('scripts')
+    <script>
+        function purchaseForm(products, suppliers, initialSupplierId, initialSupplierName) {
+            return {
+                allProducts: products,
+                allSuppliers: suppliers,
+                items: [{ product_id: '', productQuery: '', results: [], quantity: 1, price_per_unit: 0 }],
+
+                supplierQuery: initialSupplierName,
+                supplierResults: [],
+                selectedSupplierId: initialSupplierId,
+                supplierExactMatch: !!initialSupplierName,
+
+                addItem() {
+                    this.items.push({ product_id: '', productQuery: '', results: [], quantity: 1, price_per_unit: 0 });
+                },
+
+                filterProducts(item) {
+                    item.product_id = '';
+                    const q = item.productQuery.toLowerCase();
+                    item.results = q.length > 1
+                        ? this.allProducts.filter(p => p.nama.toLowerCase().includes(q))
+                        : [];
+                },
+                selectProduct(item, p) {
+                    item.product_id = p.id;
+                    item.productQuery = p.nama;
+                    item.price_per_unit = p.harga_modal;
+                    item.results = [];
+                },
+
+                filterSuppliers() {
+                    this.selectedSupplierId = 0;
+                    const q = this.supplierQuery.toLowerCase();
+                    this.supplierResults = q.length > 0
+                        ? this.allSuppliers.filter(s => s.nama.toLowerCase().includes(q))
+                        : this.allSuppliers;
+                    this.supplierExactMatch = this.allSuppliers.some(s => s.nama.toLowerCase() === q);
+                },
+                selectSupplier(item) {
+                    this.selectedSupplierId = item.id;
+                    this.supplierQuery = item.nama;
+                    this.supplierExactMatch = true;
+                    this.supplierResults = [];
+                },
+                addSupplier() {
+                    fetch('{{ route('suppliers.quick') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        },
+                        body: JSON.stringify({ nama: this.supplierQuery }),
+                    })
+                    .then(r => r.json())
+                    .then(item => {
+                        this.allSuppliers.push(item);
+                        this.selectSupplier(item);
+                    });
+                },
+
+                get total() {
+                    return this.items.reduce((sum, it) => sum + (it.quantity * it.price_per_unit), 0);
+                },
+            }
+        }
+    </script>
+    @endpush
 </x-app-layout>
