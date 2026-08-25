@@ -7,14 +7,15 @@
     <title>{{ config('app.name', 'Bengkel') }} - {{ $title ?? 'Dashboard' }}</title>
     @vite(['resources/css/adminlte.css', 'resources/js/adminlte.js'])
 </head>
-<body class="hold-transition sidebar-mini layout-fixed" x-data="{ sidebarCollapsed: false, userMenuOpen: false }" :class="{ 'sidebar-collapse': sidebarCollapsed }">
+<body class="hold-transition sidebar-mini layout-fixed" x-data="{ userMenuOpen: false }"
+      @click="if (window.innerWidth < 992 && document.body.classList.contains('sidebar-open') && !$event.target.closest('.main-sidebar') && !$event.target.closest('[data-widget=pushmenu]')) { document.body.classList.remove('sidebar-open'); }">
 <div class="wrapper">
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="#" role="button" @click.prevent="sidebarCollapsed = !sidebarCollapsed"><i class="fas fa-bars"></i></a>
+                <a class="nav-link" href="#" role="button" onclick="event.preventDefault(); if (window.innerWidth < 992) { document.body.classList.toggle('sidebar-open'); } else { document.body.classList.toggle('sidebar-collapse'); } event.stopPropagation();"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
