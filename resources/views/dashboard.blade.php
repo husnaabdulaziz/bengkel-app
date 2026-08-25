@@ -41,7 +41,7 @@
                 <div class="small-box bg-success h-100">
                     <div class="inner">
                         <h4 x-text="'Rp ' + totalLaba.toLocaleString('id-ID')"></h4>
-                        <p>Total Laba</p>
+                        <p>Laba Bersih</p>
                     </div>
                     <div class="icon"><i class="fas fa-coins"></i></div>
                 </div>

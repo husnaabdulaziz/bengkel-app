@@ -125,6 +125,12 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial*', 'expenses.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-money-bill-wave"></i>
+                            <p>Laporan Keuangan</p>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>

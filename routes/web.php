@@ -86,5 +86,14 @@ Route::resource('product-subcategories', ProductSubcategoryController::class)
 Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
 Route::post('product-brands/quick', [ProductBrandController::class, 'quickStore'])->name('product-brands.quick');
 Route::post('suppliers/quick', [SupplierController::class, 'quickStore'])->name('suppliers.quick');
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FinancialReportController;
+
+Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'destroy']);
+
+Route::get('reports/financial', [FinancialReportController::class, 'index'])->name('reports.financial');
+Route::get('reports/financial/pdf', [FinancialReportController::class, 'pdf'])->name('reports.financial.pdf');
+Route::get('reports/financial/excel', [FinancialReportController::class, 'excel'])->name('reports.financial.excel');
+
     
 require __DIR__.'/auth.php';

@@ -61,11 +61,11 @@ class DashboardController extends Controller
         $feeManual = \App\Models\TechnicianManualFee::whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()])
             ->sum('fee_amount');
 
-        $totalLaba = $laborCost - $feeOtomatis - $feeManual;
-
         $totalPelanggan = (clone $completedOrders)->count();
 
         $totalPengeluaran = Expense::whereBetween('expense_date', [$start, $end])->sum('amount');
+
+        $totalLaba = $laborCost - $feeOtomatis - $feeManual - $totalPengeluaran;
 
         $chartRaw = WorkOrder::where('stage', 'completed')
             ->whereBetween('paid_at', [$start, $end])
