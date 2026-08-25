@@ -1,8 +1,8 @@
 @php $p = $product ?? null; @endphp
 
 @if ($errors->any())
-    <div class="p-3 bg-red-100 text-red-700 rounded">
-        <ul class="list-disc list-inside text-sm">
+    <div class="alert alert-danger">
+        <ul class="mb-0">
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach
@@ -23,155 +23,151 @@
         '{{ addslashes($p?->supplier?->nama ?? '') }}'
      )">
 
-    <div class="grid grid-cols-2 gap-4">
-        <div>
-            <label class="block text-sm font-medium mb-1">Nama Produk</label>
-            <input type="text" name="nama" value="{{ old('nama', $p?->nama) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="row">
+        <div class="col-md-6 form-group">
+            <label>Nama Produk</label>
+            <input type="text" name="nama" value="{{ old('nama', $p?->nama) }}" required class="form-control">
         </div>
-        <div>
-            <label class="block text-sm font-medium mb-1">SKU</label>
-            <input type="text" name="sku" value="{{ old('sku', $p?->sku) }}" class="border rounded px-3 py-2 w-full">
+        <div class="col-md-6 form-group">
+            <label>SKU</label>
+            <input type="text" name="sku" value="{{ old('sku', $p?->sku) }}" class="form-control">
         </div>
 
-        <div>
-            <label class="block text-sm font-medium mb-1">Kategori</label>
-            <select name="category_id" x-model="categoryId" @change="onCategoryChange()" class="border rounded px-3 py-2 w-full">
+        <div class="col-md-6 form-group">
+            <label>Kategori</label>
+            <select name="category_id" x-model="categoryId" @change="onCategoryChange()" class="form-control">
                 <option value="0">- Pilih -</option>
                 @foreach ($categories as $cat)
                     <option value="{{ $cat->id }}">{{ $cat->nama }}</option>
                 @endforeach
             </select>
         </div>
-        <div>
-            <label class="block text-sm font-medium mb-1">Sub Kategori</label>
-            <div class="relative">
+        <div class="col-md-6 form-group">
+            <label>Sub Kategori</label>
+            <div class="position-relative">
                 <input type="text" x-model="subcategoryQuery" @input="filterSubcategories" @focus="filterSubcategories"
-                       placeholder="Ketik atau pilih..." autocomplete="off"
-                       class="border rounded px-3 py-2 w-full">
-                <input type="hidden" name="subcategory_id" :value="selectedSubcategoryId">
+                       placeholder="Ketik atau pilih..." autocomplete="off" class="form-control">
+                <input type="hidden" name="subcategory_id" :value="selectedSubcategoryId || ''">
                 <div x-show="subcategoryResults.length > 0 || (subcategoryQuery.length > 0 && !subcategoryExactMatch)"
                      @click.outside="subcategoryResults = []" x-cloak
-                     class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                     class="list-group position-absolute w-100" style="z-index: 20; max-height: 200px; overflow-y: auto;">
                     <template x-for="item in subcategoryResults" :key="item.id">
-                        <div @click="selectSubcategory(item)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b" x-text="item.nama"></div>
+                        <a href="#" @click.prevent="selectSubcategory(item)" class="list-group-item list-group-item-action" x-text="item.nama"></a>
                     </template>
-                    <div x-show="subcategoryQuery.length > 0 && !subcategoryExactMatch"
-                         @click="addSubcategory()" class="p-2 hover:bg-blue-50 cursor-pointer text-sm text-blue-600">
+                    <a href="#" x-show="subcategoryQuery.length > 0 && !subcategoryExactMatch"
+                       @click.prevent="addSubcategory()" class="list-group-item list-group-item-action text-primary">
                         + Tambah "<span x-text="subcategoryQuery"></span>" sebagai sub kategori baru
-                    </div>
+                    </a>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-1" x-show="categoryId == 0">Pilih kategori dulu.</p>
+            <small class="text-muted" x-show="categoryId == 0">Pilih kategori dulu.</small>
         </div>
 
-        <div>
-            <label class="block text-sm font-medium mb-1">Brand</label>
-            <div class="relative">
+        <div class="col-md-6 form-group">
+            <label>Brand</label>
+            <div class="position-relative">
                 <input type="text" x-model="brandQuery" @input="filterBrands" @focus="filterBrands"
-                       placeholder="Ketik atau pilih..." autocomplete="off"
-                       class="border rounded px-3 py-2 w-full">
+                       placeholder="Ketik atau pilih..." autocomplete="off" class="form-control">
                 <input type="hidden" name="brand_id" :value="selectedBrandId">
                 <div x-show="brandResults.length > 0 || (brandQuery.length > 0 && !brandExactMatch)"
                      @click.outside="brandResults = []" x-cloak
-                     class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                     class="list-group position-absolute w-100" style="z-index: 20; max-height: 200px; overflow-y: auto;">
                     <template x-for="item in brandResults" :key="item.id">
-                        <div @click="selectBrand(item)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b" x-text="item.nama"></div>
+                        <a href="#" @click.prevent="selectBrand(item)" class="list-group-item list-group-item-action" x-text="item.nama"></a>
                     </template>
-                    <div x-show="brandQuery.length > 0 && !brandExactMatch"
-                         @click="addBrand()" class="p-2 hover:bg-blue-50 cursor-pointer text-sm text-blue-600">
+                    <a href="#" x-show="brandQuery.length > 0 && !brandExactMatch"
+                       @click.prevent="addBrand()" class="list-group-item list-group-item-action text-primary">
                         + Tambah "<span x-text="brandQuery"></span>" sebagai brand baru
-                    </div>
+                    </a>
                 </div>
             </div>
-            <p class="text-xs text-gray-400 mt-1" x-show="categoryId == 0">Pilih kategori dulu.</p>
+            <small class="text-muted" x-show="categoryId == 0">Pilih kategori dulu.</small>
         </div>
 
-        <div>
-            <label class="block text-sm font-medium mb-1">Vendor Utama</label>
-            <div class="relative">
+        <div class="col-md-6 form-group">
+            <label>Vendor Utama</label>
+            <div class="position-relative">
                 <input type="text" x-model="supplierQuery" @input="filterSuppliers" @focus="filterSuppliers"
-                       placeholder="Ketik atau pilih..." autocomplete="off"
-                       class="border rounded px-3 py-2 w-full">
+                       placeholder="Ketik atau pilih..." autocomplete="off" class="form-control">
                 <input type="hidden" name="default_supplier_id" :value="selectedSupplierId">
                 <div x-show="supplierResults.length > 0 || (supplierQuery.length > 0 && !supplierExactMatch)"
                      @click.outside="supplierResults = []" x-cloak
-                     class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                     class="list-group position-absolute w-100" style="z-index: 20; max-height: 200px; overflow-y: auto;">
                     <template x-for="item in supplierResults" :key="item.id">
-                        <div @click="selectSupplier(item)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b" x-text="item.nama"></div>
+                        <a href="#" @click.prevent="selectSupplier(item)" class="list-group-item list-group-item-action" x-text="item.nama"></a>
                     </template>
-                    <div x-show="supplierQuery.length > 0 && !supplierExactMatch"
-                         @click="addSupplier()" class="p-2 hover:bg-blue-50 cursor-pointer text-sm text-blue-600">
+                    <a href="#" x-show="supplierQuery.length > 0 && !supplierExactMatch"
+                       @click.prevent="addSupplier()" class="list-group-item list-group-item-action text-primary">
                         + Tambah "<span x-text="supplierQuery"></span>" sebagai vendor baru
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium mb-1">Satuan</label>
-            <input type="text" name="satuan" value="{{ old('satuan', $p?->satuan ?? 'pcs') }}" required class="border rounded px-3 py-2 w-full">
+        <div class="col-md-6 form-group">
+            <label>Satuan</label>
+            <input type="text" name="satuan" value="{{ old('satuan', $p?->satuan ?? 'pcs') }}" required class="form-control">
         </div>
     </div>
 </div>
 
-<div class="flex gap-6">
-    <label class="flex items-center gap-2">
-        <input type="checkbox" name="is_jasa" value="1" @checked(old('is_jasa', $p?->is_jasa))>
-        <span class="text-sm">Ini item Jasa (tidak punya stock)</span>
-    </label>
-    <label class="flex items-center gap-2">
-        <input type="checkbox" name="garansi_aktif" value="1" @checked(old('garansi_aktif', $p?->garansi_aktif))>
-        <span class="text-sm">Aktifkan garansi</span>
-    </label>
+<div class="form-group">
+    <div class="custom-control custom-checkbox custom-control-inline">
+        <input type="checkbox" class="custom-control-input" id="is_jasa" name="is_jasa" value="1" @checked(old('is_jasa', $p?->is_jasa))>
+        <label class="custom-control-label" for="is_jasa">Ini item Jasa (tidak punya stock)</label>
+    </div>
+    <div class="custom-control custom-checkbox custom-control-inline">
+        <input type="checkbox" class="custom-control-input" id="garansi_aktif" name="garansi_aktif" value="1" @checked(old('garansi_aktif', $p?->garansi_aktif))>
+        <label class="custom-control-label" for="garansi_aktif">Aktifkan garansi</label>
+    </div>
 </div>
 
-<div>
-    <label class="block text-sm font-medium mb-1">Durasi Garansi (hari)</label>
-    <input type="number" name="garansi_durasi_hari" value="{{ old('garansi_durasi_hari', $p?->garansi_durasi_hari) }}" class="border rounded px-3 py-2 w-full">
+<div class="form-group">
+    <label>Durasi Garansi (hari)</label>
+    <input type="number" name="garansi_durasi_hari" value="{{ old('garansi_durasi_hari', $p?->garansi_durasi_hari) }}" class="form-control" style="max-width: 200px;">
 </div>
 
-<hr class="my-2">
-<h3 class="font-semibold">Fee Mekanik (opsional)</h3>
-<div class="grid grid-cols-2 gap-4">
-    <div>
-        <label class="block text-sm font-medium mb-1">Jenis Fee</label>
-        <select name="fee_type" class="border rounded px-3 py-2 w-full">
+<hr>
+<h5>Fee Mekanik (opsional)</h5>
+<div class="row">
+    <div class="col-md-6 form-group">
+        <label>Jenis Fee</label>
+        <select name="fee_type" class="form-control">
             <option value="fixed" @selected(old('fee_type', $p?->fee?->fee_type) === 'fixed')>Nominal Tetap (Rp)</option>
             <option value="percent" @selected(old('fee_type', $p?->fee?->fee_type) === 'percent')>Persen dari Subtotal (%)</option>
         </select>
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Nilai Fee</label>
-        <input type="number" step="0.01" name="fee_value" value="{{ old('fee_value', $p?->fee?->fee_value ?? 0) }}" class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Nilai Fee</label>
+        <input type="number" step="0.01" name="fee_value" value="{{ old('fee_value', $p?->fee?->fee_value ?? 0) }}" class="form-control">
     </div>
 </div>
 
-<hr class="my-2">
-<h3 class="font-semibold">Tarif Harga</h3>
-
-<div class="grid grid-cols-2 gap-4">
-    <div>
-        <label class="block text-sm font-medium mb-1">Harga Modal</label>
-        <input type="number" step="0.01" name="harga_modal" value="{{ old('harga_modal', $p?->harga_modal ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+<hr>
+<h5>Tarif Harga</h5>
+<div class="row">
+    <div class="col-md-6 form-group">
+        <label>Harga Modal</label>
+        <input type="number" step="0.01" name="harga_modal" value="{{ old('harga_modal', $p?->harga_modal ?? 0) }}" required class="form-control">
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Harga Jual</label>
-        <input type="number" step="0.01" name="harga_jual" value="{{ old('harga_jual', $p?->harga_jual ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Harga Jual</label>
+        <input type="number" step="0.01" name="harga_jual" value="{{ old('harga_jual', $p?->harga_jual ?? 0) }}" required class="form-control">
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Harga Jual + Jasa</label>
-        <input type="number" step="0.01" name="harga_jual_jasa" value="{{ old('harga_jual_jasa', $p?->harga_jual_jasa ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Harga Bawa</label>
+        <input type="number" step="0.01" name="harga_jual_jasa" value="{{ old('harga_jual_jasa', $p?->harga_jual_jasa ?? 0) }}" required class="form-control">
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Harga Online</label>
-        <input type="number" step="0.01" name="harga_online" value="{{ old('harga_online', $p?->harga_online ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Harga Online</label>
+        <input type="number" step="0.01" name="harga_online" value="{{ old('harga_online', $p?->harga_online ?? 0) }}" required class="form-control">
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Harga Ojol</label>
-        <input type="number" step="0.01" name="harga_ojol" value="{{ old('harga_ojol', $p?->harga_ojol ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Harga Ojol</label>
+        <input type="number" step="0.01" name="harga_ojol" value="{{ old('harga_ojol', $p?->harga_ojol ?? 0) }}" required class="form-control">
     </div>
-    <div>
-        <label class="block text-sm font-medium mb-1">Minimum Stock</label>
-        <input type="number" name="minimum_stock" value="{{ old('minimum_stock', $p?->minimum_stock ?? 0) }}" required class="border rounded px-3 py-2 w-full">
+    <div class="col-md-6 form-group">
+        <label>Minimum Stock</label>
+        <input type="number" name="minimum_stock" value="{{ old('minimum_stock', $p?->minimum_stock ?? 0) }}" required class="form-control">
     </div>
 </div>
 

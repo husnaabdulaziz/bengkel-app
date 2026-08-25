@@ -36,7 +36,7 @@
 
                 <div>
                     <span class="text-muted small mr-3">Tampilkan kolom tambahan:</span>
-                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showJualJasa" class="mr-1"> Harga Jual+Jasa</label>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showJualJasa" class="mr-1"> Harga Bawa</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showOnline" class="mr-1"> Harga Online</label>
                     <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showOjol" class="mr-1"> Harga Ojol</label>
                 </div>

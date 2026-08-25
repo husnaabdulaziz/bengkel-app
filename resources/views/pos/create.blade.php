@@ -97,7 +97,7 @@
                         <div class="card-body">
                             <select x-model="priceTier" @change="recalcAllPrices" class="form-control" style="max-width: 300px;">
                                 <option value="harga_jual">Harga Jual (Reguler)</option>
-                                <option value="harga_jual_jasa">Harga Jual + Jasa</option>
+                                <option value="harga_jual_jasa">Harga Bawa</option>
                                 <option value="harga_online">Harga Online</option>
                                 <option value="harga_ojol">Harga Ojol</option>
                                 <option value="custom">Custom (edit manual per item)</option>
