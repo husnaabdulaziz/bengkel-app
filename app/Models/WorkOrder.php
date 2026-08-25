@@ -52,6 +52,18 @@ class WorkOrder extends Model
                 ->whereIn('work_order_item_id', $this->items()->pluck('id'));
         })->get();
     }
+    public function technicianInitials(): string
+    {
+        $names = collect();
+        foreach ($this->items as $item) {
+            foreach ($item->technicians as $wit) {
+                if ($wit->technician) {
+                    $names->push($wit->technician->inisial ?? $wit->technician->name);
+                }
+            }
+        }
+        return $names->unique()->implode(', ');
+    }
 
 
 }

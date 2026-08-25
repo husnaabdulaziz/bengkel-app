@@ -246,7 +246,7 @@ class PosController extends Controller
     /** Tahap 2: detail 1 work order, bisa tambah item */
     public function showQueue(WorkOrder $workOrder)
         {
-            $workOrder->load('items.product', 'customer');
+            $workOrder->load('items.product', 'items.technicians.technician', 'customer');
             $assignedTechnicians = $workOrder->assignedTechnicians();
             $assignedTechnicianIds = $assignedTechnicians->pluck('id')->toArray();
             $currentManualFee = (bool) $workOrder->items->first()?->manual_fee;
@@ -340,7 +340,7 @@ class PosController extends Controller
                 return redirect()->route('pos.queue')->with('error', 'Work order ini belum siap dibayar.');
             }
 
-            $workOrder->load('items', 'customer');
+            $workOrder->load('items', 'items.technicians.technician', 'customer');
             $assignedTechnicians = $workOrder->assignedTechnicians();
             $otherOrders = $this->getOpenOrders($workOrder->branch_id, $workOrder->id);
 
@@ -447,7 +447,7 @@ public function updateTechnicians(Request $request, WorkOrder $workOrder)
 }
 private function getOpenOrders(int $branchId, ?int $excludeId = null)
     {
-        return WorkOrder::with('customer')
+        return WorkOrder::with('customer', 'items.technicians.technician')
             ->where('branch_id', $branchId)
             ->whereIn('stage', ['draft', 'queue'])
             ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
