@@ -7,30 +7,30 @@
     <title>{{ config('app.name', 'Bengkel') }} - {{ $title ?? 'Dashboard' }}</title>
     @vite(['resources/css/adminlte.css', 'resources/js/adminlte.js'])
 </head>
-<body class="hold-transition sidebar-mini layout-fixed">
+<body class="hold-transition sidebar-mini layout-fixed" x-data="{ sidebarCollapsed: false, userMenuOpen: false }" :class="{ 'sidebar-collapse': sidebarCollapsed }">
 <div class="wrapper">
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                <a class="nav-link" href="#" role="button" @click.prevent="sidebarCollapsed = !sidebarCollapsed"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="#">
-                    <i class="far fa-user"></i> {{ Auth::user()->name }}
-                </a>
-                <div class="dropdown-menu dropdown-menu-right">
-                    <a href="{{ route('profile.edit') }}" class="dropdown-item">Profile</a>
-                    <div class="dropdown-divider"></div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item">Log Out</button>
-                    </form>
-                </div>
-            </li>
+            <li class="nav-item dropdown" @click.outside="userMenuOpen = false">
+    <a class="nav-link" href="#" @click.prevent="userMenuOpen = !userMenuOpen">
+        <i class="far fa-user"></i> {{ Auth::user()->name }}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" :class="{ 'show': userMenuOpen }" style="position: absolute; right: 0;">
+                <a href="{{ route('profile.edit') }}" class="dropdown-item">Profile</a>
+                <div class="dropdown-divider"></div>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="dropdown-item">Log Out</button>
+                </form>
+            </div>
+        </li>
         </ul>
     </nav>
 
@@ -125,9 +125,11 @@
         </section>
     </div>
 
-    <footer class="main-footer">
+        <footer class="main-footer">
         <strong>&copy; {{ date('Y') }} Bengkel Jaya.</strong>
     </footer>
 </div>
+
+@stack('scripts')
 </body>
 </html>
