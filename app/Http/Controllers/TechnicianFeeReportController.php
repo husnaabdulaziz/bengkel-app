@@ -75,15 +75,13 @@ class TechnicianFeeReportController extends Controller
             'totalFee' => $totalFee,
         ]);
 
-        $technicianSlug = $technician
-            ? \Illuminate\Support\Str::slug($technician->name)
-            : 'semua-mekanik';
+        $technicianNameForFile = $technician ? $technician->name : 'Semua Mekanik';
 
-        $dateSlug = $start->isSameDay($end)
-            ? $start->format('d-m-Y')
-            : $start->format('d-m-Y') . '_sd_' . $end->format('d-m-Y');
+            $dateSlug = $start->isSameDay($end)
+                ? $start->format('d-m-y')
+                : $start->format('d-m-y') . ' sd ' . $end->format('d-m-y');
 
-        $filename = 'laporan-fee-' . $technicianSlug . '-' . $dateSlug . '.pdf';
+            $filename = "Lap. Fee {$technicianNameForFile} {$dateSlug}.pdf";
 
         return $pdf->stream($filename);
     }

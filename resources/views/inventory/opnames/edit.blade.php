@@ -13,20 +13,18 @@
         @endif
 
         <div class="bg-white p-4 rounded shadow mb-4">
-            @if ($opname->status !== 'completed')
-                <div class="mb-3">
-                    <span class="text-sm text-gray-500 mr-3">Tampilkan kolom tambahan:</span>
-                    <label class="inline-flex items-center gap-1 text-sm mr-4">
-                        <input type="checkbox" x-model="showKategori"> Kategori
-                    </label>
-                    <label class="inline-flex items-center gap-1 text-sm mr-4">
-                        <input type="checkbox" x-model="showSubkategori"> Sub Kategori
-                    </label>
-                    <label class="inline-flex items-center gap-1 text-sm">
-                        <input type="checkbox" x-model="showBrand"> Brand
-                    </label>
-                </div>
-            @endif
+            <div class="mb-3">
+                <span class="text-sm text-gray-500 mr-3">Tampilkan kolom tambahan:</span>
+                <label class="inline-flex items-center gap-1 text-sm mr-4">
+                    <input type="checkbox" x-model="showKategori"> Kategori
+                </label>
+                <label class="inline-flex items-center gap-1 text-sm mr-4">
+                    <input type="checkbox" x-model="showSubkategori"> Sub Kategori
+                </label>
+                <label class="inline-flex items-center gap-1 text-sm">
+                    <input type="checkbox" x-model="showBrand"> Brand
+                </label>
+            </div>
 
             <input type="text" x-model="searchQuery" placeholder="Cari nama produk, kategori, sub kategori, atau brand..."
                 class="border rounded px-3 py-2 w-full">
@@ -89,7 +87,11 @@
                 <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded">Sesuaikan Stock Sekarang</button>
             </form>
         @else
-            <p class="text-green-700 font-medium">Opname ini sudah selesai dan stock telah disesuaikan.</p>
+            <div class="flex items-center justify-between">
+                <p class="text-green-700 font-medium">Opname ini sudah selesai dan stock telah disesuaikan.</p>
+                <a :href="`{{ route('stock-opnames.pdf', $opname) }}?kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}`"
+                target="_blank" class="bg-gray-700 text-white px-4 py-2 rounded">Download PDF</a>
+            </div>
         @endif
     </div>
 </x-app-layout>

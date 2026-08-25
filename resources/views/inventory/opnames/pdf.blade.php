@@ -29,6 +29,9 @@
         <thead>
             <tr>
                 <th>Produk</th>
+                @if ($showKategori) <th>Kategori</th> @endif
+                @if ($showSubkategori) <th>Sub Kategori</th> @endif
+                @if ($showBrand) <th>Brand</th> @endif
                 <th class="text-right">Stock Sistem</th>
                 <th class="text-right">Stock Real</th>
                 <th class="text-right">Selisih</th>
@@ -39,6 +42,9 @@
             @foreach ($opname->items as $item)
                 <tr>
                     <td>{{ $item->product->nama }}</td>
+                    @if ($showKategori) <td>{{ $item->product->category?->nama ?? '-' }}</td> @endif
+                    @if ($showSubkategori) <td>{{ $item->product->subcategory?->nama ?? '-' }}</td> @endif
+                    @if ($showBrand) <td>{{ $item->product->brand?->nama ?? '-' }}</td> @endif
                     <td class="text-right">{{ $item->system_stock }}</td>
                     <td class="text-right">{{ $item->real_stock }}</td>
                     <td class="text-right {{ $item->difference > 0 ? 'text-green' : ($item->difference < 0 ? 'text-red' : '') }}">

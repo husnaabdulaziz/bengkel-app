@@ -134,12 +134,17 @@ class StockOpnameController extends Controller
 
         return redirect()->route('stock-opnames.index')->with('success', 'Stock berhasil disesuaikan otomatis.');
     }
-    public function pdf(StockOpname $stockOpname)
-{
-    $stockOpname->load('items.product', 'branch');
+    public function pdf(StockOpname $stockOpname, Request $request)
+    {
+        $stockOpname->load('items.product.category', 'items.product.subcategory', 'items.product.brand', 'branch');
 
-    $pdf = Pdf::loadView('inventory.opnames.pdf', ['opname' => $stockOpname]);
+        $pdf = Pdf::loadView('inventory.opnames.pdf', [
+            'opname' => $stockOpname,
+            'showKategori' => $request->boolean('kategori'),
+            'showSubkategori' => $request->boolean('subkategori'),
+            'showBrand' => $request->boolean('brand'),
+        ]);
 
-    return $pdf->stream($stockOpname->kode_opname . '.pdf');
-}
+        return $pdf->stream($stockOpname->kode_opname . '.pdf');
+    }
 }
