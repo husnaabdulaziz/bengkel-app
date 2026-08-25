@@ -51,4 +51,7 @@ class Product extends Model
         return $this->branchStocks()->where('branch_id', $branchId)->value('stock_qty') ?? 0;
     }
     public function fee() { return $this->hasOne(ProductFee::class); }
+    public function subcategory() { return $this->belongsTo(ProductSubcategory::class, 'subcategory_id'); }
+
+
 }

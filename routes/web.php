@@ -77,4 +77,14 @@ Route::resource('technicians', TechnicianController::class)->parameters(['techni
 Route::patch('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'updateFee'])->name('reports.technician-fee.update');
 Route::get('reports/technician-fee/{workOrderItemTechnician}/edit', [TechnicianFeeReportController::class, 'edit'])->name('reports.technician-fee.edit');
 Route::delete('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'destroy'])->name('reports.technician-fee.destroy');
+use App\Http\Controllers\ProductSubcategoryController;
+
+Route::resource('product-subcategories', ProductSubcategoryController::class)
+    ->parameters(['product-subcategories' => 'subcategory'])
+    ->except(['show', 'create', 'edit']);
+
+Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
+Route::post('product-brands/quick', [ProductBrandController::class, 'quickStore'])->name('product-brands.quick');
+Route::post('suppliers/quick', [SupplierController::class, 'quickStore'])->name('suppliers.quick');
+    
 require __DIR__.'/auth.php';

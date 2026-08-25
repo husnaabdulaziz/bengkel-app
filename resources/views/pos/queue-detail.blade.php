@@ -160,10 +160,14 @@
             @endif
         @endif
         @if ($workOrder->stage === 'draft')
-    <form method="POST" action="{{ route('pos.queue.process', $workOrder) }}">
-        @csrf
-        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Lanjut ke Pembayaran</button>
-    </form>
+        <form method="POST" action="{{ route('pos.queue.process', $workOrder) }}">
+            @csrf
+            <template x-for="techId in selectedTechnicians" :key="techId">
+                <input type="hidden" name="technician_ids[]" :value="techId">
+            </template>
+            <input type="hidden" name="manual_fee" :value="(manualFee || selectedTechnicians.length > 1) ? 1 : 0">
+            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Lanjut ke Pembayaran</button>
+        </form>
 @elseif ($workOrder->stage === 'queue')
     <a href="{{ route('pos.payment', $workOrder) }}" class="inline-block bg-green-600 text-white px-6 py-2 rounded">Lanjut ke Pembayaran</a>
 @else

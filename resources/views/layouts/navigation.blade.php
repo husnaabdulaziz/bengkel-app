@@ -36,6 +36,9 @@
                             <a href="{{ route('product-categories.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Kategori Produk
                             </a>
+                            <a href="{{ route('product-subcategories.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                Sub Kategori
+                            </a>
                             <a href="{{ route('product-brands.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 Brand
                             </a>

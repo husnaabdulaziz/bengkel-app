@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Pembelian dari Supplier</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Pembelian dari Vendor</h2>
     </x-slot>
 
     <div class="py-6 max-w-6xl mx-auto sm:px-6 lg:px-8">
@@ -19,7 +19,7 @@
                     <tr>
                         <th class="p-3">No. Invoice</th>
                         <th class="p-3">Tanggal</th>
-                        <th class="p-3">Supplier</th>
+                        <th class="p-3">Vendor</th>
                         <th class="p-3">Cabang</th>
                         <th class="p-3 text-right">Total</th>
                         <th class="p-3">Status</th>

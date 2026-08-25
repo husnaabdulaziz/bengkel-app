@@ -42,6 +42,7 @@
                     <tr>
                         <th class="p-3">Nama</th>
                         <th class="p-3">Kategori</th>
+                        <th class="p-3">Sub Kategori</th>
                         <th class="p-3">Brand</th>
                         <th class="p-3 text-right">Stock</th>
                         <th class="p-3 text-right">Harga Jual</th>
@@ -65,6 +66,7 @@
                                 <span x-show="p.is_jasa" class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded ml-1">Jasa</span>
                             </td>
                             <td class="p-3" x-text="p.category || '-'"></td>
+                            <td class="p-3" x-text="p.subcategory || '-'"></td>
                             <td class="p-3" x-text="p.brand || '-'"></td>
                             <td class="p-3 text-right">
                                 <template x-if="p.is_jasa">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductBrand;
 use App\Models\ProductCategory;
+use App\Models\ProductSubcategory;
 use App\Models\ProductFee;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand']);
+        $query = Product::with(['category', 'brand', 'subcategory']);
 
         if ($request->filled('search')) {
             $query->where('nama', 'like', '%' . $request->search . '%');
@@ -36,7 +37,7 @@ class ProductController extends Controller
     /** JSON: data list produk untuk live filter (Alpine.js) */
     public function data(Request $request)
     {
-        $query = Product::with(['category', 'brand']);
+        $query = Product::with(['category', 'brand', 'subcategory']);
 
         if ($request->filled('search')) {
             $query->where('nama', 'like', '%' . $request->search . '%');
@@ -57,6 +58,7 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
                     'nama' => $p->nama,
                     'is_jasa' => $p->is_jasa,
                     'category' => $p->category?->nama,
+                    'subcategory' => $p->subcategory?->nama,
                     'brand' => $p->brand?->nama,
                     'harga_jual' => number_format($p->harga_jual, 0, ',', '.'),
                     'harga_jual_jasa' => number_format($p->harga_jual_jasa, 0, ',', '.'),
@@ -79,10 +81,11 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
     public function create()
     {
         $categories = ProductCategory::orderBy('nama')->get();
-        $brands = ProductBrand::orderBy('nama')->get();
+        $subcategories = ProductSubcategory::orderBy('nama')->get();
+        $brands = ProductBrand::with('categories')->orderBy('nama')->get();
         $suppliers = Supplier::orderBy('nama')->get();
 
-        return view('master.products.create', compact('categories', 'brands', 'suppliers'));
+        return view('master.products.create', compact('categories', 'subcategories', 'brands', 'suppliers'));
     }
 
     public function store(Request $request)
@@ -102,11 +105,12 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
     public function edit(Product $product)
         {
             $categories = ProductCategory::orderBy('nama')->get();
+            $subcategories = ProductSubcategory::orderBy('nama')->get();
             $brands = ProductBrand::orderBy('nama')->get();
             $suppliers = Supplier::orderBy('nama')->get();
             $product->load('fee');
 
-            return view('master.products.edit', compact('product', 'categories', 'brands', 'suppliers'));
+            return view('master.products.edit', compact('product', 'categories', 'subcategories', 'brands', 'suppliers'));
         }
 
     public function update(Request $request, Product $product)
@@ -146,6 +150,7 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
     {
         return $request->validate([
             'category_id' => 'nullable|exists:product_categories,id',
+            'subcategory_id' => 'nullable|exists:product_subcategories,id',
             'brand_id' => 'nullable|exists:product_brands,id',
             'default_supplier_id' => 'nullable|exists:suppliers,id',
             'sku' => 'nullable|string|max:60',

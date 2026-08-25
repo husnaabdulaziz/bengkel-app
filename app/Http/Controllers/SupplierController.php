@@ -46,4 +46,14 @@ class SupplierController extends Controller
         $supplier->delete();
         return back()->with('success', 'Supplier berhasil dihapus.');
     }
+    public function quickStore(Request $request)
+    {
+        $validated = $request->validate([
+            'nama' => 'required|string|max:150',
+        ]);
+
+        $supplier = Supplier::create(['nama' => $validated['nama']]);
+
+        return response()->json(['id' => $supplier->id, 'nama' => $supplier->nama]);
+    }
 }

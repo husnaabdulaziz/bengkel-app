@@ -299,16 +299,39 @@ class PosController extends Controller
     }
 
     /** Pindah dari draft -> queue (mulai diproses) */
-    public function process(WorkOrder $workOrder)
-        {
-            if ($workOrder->stage !== 'draft') {
-                return back()->with('error', 'Work order ini bukan status draft.');
+    public function process(Request $request, WorkOrder $workOrder)
+    {
+        if ($workOrder->stage !== 'draft') {
+            return back()->with('error', 'Work order ini bukan status draft.');
+        }
+
+        $validated = $request->validate([
+            'technician_ids' => 'nullable|array',
+            'technician_ids.*' => 'exists:users,id',
+            'manual_fee' => 'nullable',
+        ]);
+
+        $isManualFee = !empty($validated['manual_fee']) && $validated['manual_fee'] != '0';
+        $technicianIds = $validated['technician_ids'] ?? [];
+
+        foreach ($workOrder->items as $item) {
+            WorkOrderItemTechnician::where('work_order_item_id', $item->id)->delete();
+
+            foreach ($technicianIds as $techId) {
+                WorkOrderItemTechnician::create([
+                    'work_order_item_id' => $item->id,
+                    'user_id' => $techId,
+                    'fee_amount' => 0,
+                ]);
             }
 
-            $workOrder->update(['stage' => 'queue']);
-
-            return redirect()->route('pos.payment', $workOrder)->with('success', 'Servis mulai diproses, lanjut ke pembayaran.');
+            $item->update(['manual_fee' => $isManualFee]);
         }
+
+    $workOrder->update(['stage' => 'queue']);
+
+    return redirect()->route('pos.payment', $workOrder)->with('success', 'Servis mulai diproses, lanjut ke pembayaran.');
+}
 
     /** Tahap 3: form pembayaran */
     public function paymentForm(WorkOrder $workOrder)

@@ -26,17 +26,26 @@ class DashboardController extends Controller
 
         $totalPenjualan = (clone $completedOrders)->sum('total_amount');
 
-        $totalLaba = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end) {
-                $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
-            })
-            ->with('product:id,harga_modal')
-            ->get()
-            ->sum(function ($item) {
-                $modal = $item->product->harga_modal ?? 0;
-                return $item->subtotal - ($modal * $item->quantity);
-            });
+        $laborCost = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end) {
+        $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+    })
+    ->with('product:id,harga_modal')
+    ->get()
+    ->sum(function ($item) {
+        $modal = $item->product->harga_modal ?? 0;
+        return $item->subtotal - ($modal * $item->quantity);
+    });
 
-        $totalPelanggan = (clone $completedOrders)->distinct('customer_id')->count('customer_id');
+$feeOtomatis = \App\Models\WorkOrderItemTechnician::whereHas('item.workOrder', function ($q) use ($start, $end) {
+        $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+    })->sum('fee_amount');
+
+$feeManual = \App\Models\TechnicianManualFee::whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()])
+    ->sum('fee_amount');
+
+$totalLaba = $laborCost - $feeOtomatis - $feeManual;
+
+$totalPelanggan = (clone $completedOrders)->count();
 
         $totalPengeluaran = Expense::whereBetween('expense_date', [$start, $end])->sum('amount');
 

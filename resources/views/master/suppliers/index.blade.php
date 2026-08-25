@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Supplier</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Vendor</h2>
     </x-slot>
 
     <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
@@ -10,7 +10,7 @@
         @endif
 
         <div class="bg-white p-6 rounded shadow mb-6">
-            <h3 class="font-semibold mb-3">Tambah Supplier</h3>
+            <h3 class="font-semibold mb-3">Tambah Vendor</h3>
             <form method="POST" action="{{ route('suppliers.store') }}" class="grid grid-cols-2 gap-3">
                 @csrf
                 <input type="text" name="nama" placeholder="Nama supplier" required class="border rounded px-3 py-2">
@@ -39,14 +39,14 @@
                             <td class="p-3">{{ $supplier->telpon }}</td>
                             <td class="p-3">
                                 <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}"
-                                      onsubmit="return confirm('Hapus supplier ini?')">
+                                      onsubmit="return confirm('Hapus vendor ini?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="text-red-600 text-sm">Hapus</button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="p-3 text-gray-500">Belum ada supplier.</td></tr>
+                        <tr><td colspan="4" class="p-3 text-gray-500">Belum ada vendor.</td></tr>
                     @endforelse
                 </tbody>
             </table>

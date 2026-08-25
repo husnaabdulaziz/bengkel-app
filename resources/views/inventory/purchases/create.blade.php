@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Catat Pembelian dari Supplier</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Catat Pembelian dari vendor</h2>
     </x-slot>
 
     <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8">
@@ -43,20 +43,20 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Supplier</label>
+                    <label class="block text-sm font-medium mb-1">Vendor</label>
                     <select name="supplier_id" required class="border rounded px-3 py-2 w-full">
-                        <option value="">- Pilih Supplier -</option>
+                        <option value="">- Pilih Vendor -</option>
                         @foreach ($suppliers as $supplier)
                             <option value="{{ $supplier->id }}">{{ $supplier->nama }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">No. Invoice Supplier</label>
+                    <label class="block text-sm font-medium mb-1">No. Invoice Vendor</label>
                     <input type="text" name="invoice_number" required class="border rounded px-3 py-2 w-full">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium mb-1">Tanggal Pembelian</label>
+                    <label class="block text-sm font-medium mb-1">Tanggal Faktur</label>
                     <input type="date" name="purchase_date" value="{{ date('Y-m-d') }}" required class="border rounded px-3 py-2 w-full">
                 </div>
             </div>
