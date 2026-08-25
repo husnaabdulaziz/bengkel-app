@@ -1,59 +1,51 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Stock Opname</h2>
-    </x-slot>
+<x-admin-layout title="Stock Opname">
 
-    <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
-        @endif
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('stock-opnames.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Buat Opname Baru</a>
+    </div>
 
-        <div class="flex justify-end mb-4">
-            <a href="{{ route('stock-opnames.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Buat Opname Baru</a>
-        </div>
-
-        <div class="bg-white rounded shadow overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-100">
+    <div class="card">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
                     <tr>
-                        <th class="p-3">Kode</th>
-                        <th class="p-3">Tanggal</th>
-                        <th class="p-3">Cabang</th>
-                        <th class="p-3">Status</th>
-                        <th class="p-3 w-32">Aksi</th>
+                        <th>Kode</th>
+                        <th>Tanggal</th>
+                        <th class="d-none d-md-table-cell">Cabang</th>
+                        <th>Status</th>
+                        <th style="width: 100px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($opnames as $opname)
-                        <tr class="border-t">
-                            <td class="p-3">{{ $opname->kode_opname }}</td>
-                            <td class="p-3">{{ $opname->opname_date->format('d/m/Y') }}</td>
-                            <td class="p-3">{{ $opname->branch?->nama_cabang }}</td>
-                            <td class="p-3">
-                                <span class="text-xs px-2 py-0.5 rounded {{ $opname->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
-                                    {{ $opname->status }}
-                                </span>
+                        <tr>
+                            <td>{{ $opname->kode_opname }}</td>
+                            <td>{{ $opname->opname_date->format('d/m/Y') }}</td>
+                            <td class="d-none d-md-table-cell">{{ $opname->branch?->nama_cabang }}</td>
+                            <td>
+                                <span class="badge {{ $opname->status === 'completed' ? 'badge-success' : 'badge-warning' }}">{{ $opname->status }}</span>
                             </td>
-                            <td class="p-3">
-                                <a href="{{ route('stock-opnames.edit', $opname) }}" class="text-blue-600">
+                            <td>
+                                <a href="{{ route('stock-opnames.edit', $opname) }}"
+                                class="btn text-nowrap {{ $opname->status === 'draft' ? 'btn-warning text-dark' : 'btn-outline-primary' }}"
+                                style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">
                                     {{ $opname->status === 'draft' ? 'Lanjutkan' : 'Lihat Detail' }}
                                 </a>
-                                @if ($opname->status === 'completed')
-                                    <a href="{{ route('stock-opnames.pdf', $opname) }}" class="text-gray-600 ml-2" target="_blank">PDF</a>
-                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3 text-gray-500">Belum ada opname.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Belum ada opname.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        <div class="mt-4">{{ $opnames->links() }}</div>
     </div>
-</x-app-layout>
+    {{ $opnames->links() }}
+</x-admin-layout>

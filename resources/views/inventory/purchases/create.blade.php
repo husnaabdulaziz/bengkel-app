@@ -1,118 +1,113 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Catat Pembelian dari Vendor</h2>
-    </x-slot>
+<x-admin-layout title="Catat Pembelian dari Vendor">
 
-    <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8">
-        @if ($errors->any())
-            <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">
-                <ul class="list-disc list-inside text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <form method="POST" action="{{ route('purchases.store') }}"
-              x-data="purchaseForm(
-                  {{ $products->map(fn($p) => ['id' => $p->id, 'nama' => $p->nama, 'satuan' => $p->satuan, 'harga_modal' => (float) $p->harga_modal])->values()->toJson() }},
-                  {{ $suppliers->map(fn($s) => ['id' => $s->id, 'nama' => $s->nama])->values()->toJson() }},
-                  {{ (int) old('supplier_id', 0) }},
-                  '{{ addslashes(old('supplier_nama', '')) }}'
-              )"
-              class="bg-white p-6 rounded shadow space-y-4">
-            @csrf
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Cabang</label>
-                    <select name="branch_id" required class="border rounded px-3 py-2 w-full">
+    <form method="POST" action="{{ route('purchases.store') }}"
+          x-data="purchaseForm(
+              {{ $products->map(fn($p) => ['id' => $p->id, 'nama' => $p->nama, 'satuan' => $p->satuan, 'harga_modal' => (float) $p->harga_modal])->values()->toJson() }},
+              {{ $suppliers->map(fn($s) => ['id' => $s->id, 'nama' => $s->nama])->values()->toJson() }},
+              {{ (int) old('supplier_id', 0) }},
+              '{{ addslashes(old('supplier_nama', '')) }}'
+          )"
+          class="card">
+        @csrf
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label>Cabang</label>
+                    <select name="branch_id" required class="form-control">
                         <option value="">- Pilih Cabang -</option>
                         @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}">{{ $branch->nama_cabang }}</option>
+                            <option value="{{ $branch->id }}" @selected(old('branch_id') ? old('branch_id') == $branch->id : $branch->is_main)>{{ $branch->nama_cabang }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">Vendor</label>
-                    <div class="relative">
+                <div class="col-md-6 form-group">
+                    <label>Vendor</label>
+                    <div class="position-relative">
                         <input type="text" x-model="supplierQuery" @input="filterSuppliers" @focus="filterSuppliers"
-                               placeholder="Ketik atau pilih..." autocomplete="off"
-                               class="border rounded px-3 py-2 w-full">
+                               placeholder="Ketik atau pilih..." autocomplete="off" class="form-control">
                         <input type="hidden" name="supplier_id" :value="selectedSupplierId" required>
                         <div x-show="supplierResults.length > 0 || (supplierQuery.length > 0 && !supplierExactMatch)"
                              @click.outside="supplierResults = []" x-cloak
-                             class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                             class="list-group position-absolute w-100" style="z-index: 20; max-height: 200px; overflow-y: auto;">
                             <template x-for="item in supplierResults" :key="item.id">
-                                <div @click="selectSupplier(item)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b" x-text="item.nama"></div>
+                                <a href="#" @click.prevent="selectSupplier(item)" class="list-group-item list-group-item-action" x-text="item.nama"></a>
                             </template>
-                            <div x-show="supplierQuery.length > 0 && !supplierExactMatch"
-                                 @click="addSupplier()" class="p-2 hover:bg-blue-50 cursor-pointer text-sm text-blue-600">
+                            <a href="#" x-show="supplierQuery.length > 0 && !supplierExactMatch"
+                               @click.prevent="addSupplier()" class="list-group-item list-group-item-action text-primary">
                                 + Tambah "<span x-text="supplierQuery"></span>" sebagai vendor baru
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-1">No. Invoice Vendor</label>
-                    <input type="text" name="invoice_number" required class="border rounded px-3 py-2 w-full">
+                <div class="col-md-6 form-group">
+                    <label>No. Invoice Vendor</label>
+                    <input type="text" name="invoice_number" required class="form-control">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Tanggal Faktur</label>
-                    <input type="date" name="purchase_date" value="{{ date('Y-m-d') }}" required class="border rounded px-3 py-2 w-full">
+                <div class="col-md-6 form-group">
+                    <label>Tanggal Faktur</label>
+                    <input type="date" name="purchase_date" value="{{ date('Y-m-d') }}" required class="form-control">
                 </div>
             </div>
 
             <hr>
-            <h3 class="font-semibold">Item Produk</h3>
+            <h5>Item Produk</h5>
 
             <template x-for="(item, index) in items" :key="index">
-                <div class="grid grid-cols-12 gap-2 items-end">
-                    <div class="col-span-5 relative">
-                        <label class="block text-xs mb-1">Produk</label>
+                <div class="row align-items-end mb-2">
+                    <div class="col-5 position-relative">
+                        <label class="small mb-1">Produk</label>
                         <input type="text" x-model="item.productQuery" @input="filterProducts(item)" @focus="filterProducts(item)"
-                               placeholder="Ketik nama produk..." autocomplete="off"
-                               class="border rounded px-2 py-2 w-full text-sm">
+                               placeholder="Ketik nama produk..." autocomplete="off" class="form-control form-control-sm">
                         <input type="hidden" :name="`items[${index}][product_id]`" :value="item.product_id" required>
                         <div x-show="item.results && item.results.length > 0"
                              @click.outside="item.results = []" x-cloak
-                             class="absolute z-10 bg-white border rounded shadow w-full mt-1 max-h-48 overflow-y-auto">
+                             class="list-group position-absolute" style="z-index: 20; max-height: 200px; overflow-y: auto; width: calc(100% - 30px);">
                             <template x-for="p in item.results" :key="p.id">
-                                <div @click="selectProduct(item, p)" class="p-2 hover:bg-gray-100 cursor-pointer text-sm border-b">
+                                <a href="#" @click.prevent="selectProduct(item, p)" class="list-group-item list-group-item-action py-1">
                                     <span x-text="p.nama"></span>
-                                    <span class="text-gray-400 text-xs" x-text="'(' + p.satuan + ')'"></span>
-                                </div>
+                                    <small class="text-muted" x-text="'(' + p.satuan + ')'"></small>
+                                </a>
                             </template>
                         </div>
-                        <p class="text-xs text-red-500 mt-1" x-show="item.productQuery.length > 1 && item.results.length === 0 && !item.product_id">
-                            Tidak ditemukan. <a href="{{ route('products.create') }}" target="_blank" class="underline">Tambah produk baru</a>
-                        </p>
+                        <small class="text-danger" x-show="item.productQuery.length > 1 && item.results.length === 0 && !item.product_id">
+                            Tidak ditemukan. <a href="{{ route('products.create') }}" target="_blank">Tambah produk baru</a>
+                        </small>
                     </div>
-                    <div class="col-span-2">
-                        <label class="block text-xs mb-1">Qty</label>
-                        <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity" min="1" required class="border rounded px-2 py-2 w-full text-sm">
+                    <div class="col-2">
+                        <label class="small mb-1">Qty</label>
+                        <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity" min="1" required class="form-control form-control-sm">
                     </div>
-                    <div class="col-span-3">
-                        <label class="block text-xs mb-1">Harga Beli/Unit</label>
-                        <input type="number" step="0.01" :name="`items[${index}][price_per_unit]`" x-model.number="item.price_per_unit" min="0" required class="border rounded px-2 py-2 w-full text-sm">
+                    <div class="col-3">
+                        <label class="small mb-1">Harga Beli/Unit</label>
+                        <input type="number" step="0.01" :name="`items[${index}][price_per_unit]`" x-model.number="item.price_per_unit" min="0" required class="form-control form-control-sm">
                     </div>
-                    <div class="col-span-1 text-sm font-medium text-gray-600" x-text="'Rp ' + (item.quantity * item.price_per_unit).toLocaleString('id-ID')"></div>
-                    <div class="col-span-1">
-                        <button type="button" @click="items.splice(index, 1)" class="text-red-600 text-sm">Hapus</button>
+                    <div class="col-1 small font-weight-bold text-nowrap" x-text="'Rp ' + (item.quantity * item.price_per_unit).toLocaleString('id-ID')"></div>
+                    <div class="col-1">
+                        <button type="button" @click="items.splice(index, 1)" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             </template>
 
-            <button type="button" @click="addItem()" class="text-blue-600 text-sm">+ Tambah Baris Item</button>
+            <button type="button" @click="addItem()" class="btn btn-link btn-sm px-0">+ Tambah Baris Item</button>
 
-            <div class="text-right font-semibold text-lg pt-2 border-t" x-text="'Total: Rp ' + total.toLocaleString('id-ID')"></div>
-
-            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Simpan Pembelian</button>
-        </form>
-    </div>
+            <div class="text-right font-weight-bold h5 pt-2 border-top" x-text="'Total: Rp ' + total.toLocaleString('id-ID')"></div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Simpan Pembelian</button>
+        </div>
+    </form>
 
     @push('scripts')
     <script>
@@ -182,4 +177,4 @@
         }
     </script>
     @endpush
-</x-app-layout>
+</x-admin-layout>

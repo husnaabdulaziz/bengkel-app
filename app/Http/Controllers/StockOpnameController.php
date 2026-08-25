@@ -25,7 +25,7 @@ class StockOpnameController extends Controller
     {
         $branches = auth()->user()->isSuperAdmin() ? Branch::all() : auth()->user()->branches;
         $categories = ProductCategory::orderBy('nama')->get();
-        $brands = ProductBrand::orderBy('nama')->get();
+        $brands = ProductBrand::with('categories')->orderBy('nama')->get();
 
         return view('inventory.opnames.create', compact('branches', 'categories', 'brands'));
     }

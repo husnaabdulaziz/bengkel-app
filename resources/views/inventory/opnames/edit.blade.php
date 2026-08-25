@@ -1,81 +1,76 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Input Stock Real — {{ $opname->kode_opname }}</h2>
-    </x-slot>
+<x-admin-layout title="Input Stock Real">
 
-    <div class="py-6 max-w-6xl mx-auto sm:px-6 lg:px-8" x-data="{ showKategori: false, showSubkategori: false, showBrand: false, searchQuery: '' }">
+    <h5 class="mb-3">{{ $opname->kode_opname }}</h5>
 
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="mb-4 p-3 bg-red-100 text-red-700 rounded">{{ session('error') }}</div>
-        @endif
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
-        <div class="bg-white p-4 rounded shadow mb-4">
-            <div class="mb-3">
-                <span class="text-sm text-gray-500 mr-3">Tampilkan kolom tambahan:</span>
-                <label class="inline-flex items-center gap-1 text-sm mr-4">
-                    <input type="checkbox" x-model="showKategori"> Kategori
-                </label>
-                <label class="inline-flex items-center gap-1 text-sm mr-4">
-                    <input type="checkbox" x-model="showSubkategori"> Sub Kategori
-                </label>
-                <label class="inline-flex items-center gap-1 text-sm">
-                    <input type="checkbox" x-model="showBrand"> Brand
-                </label>
+    <div x-data="{ showKategori: false, showSubkategori: false, showBrand: false, searchQuery: '' }">
+
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="text-muted small mr-3">Tampilkan kolom tambahan:</span>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showKategori" class="mr-1"> Kategori</label>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showSubkategori" class="mr-1"> Sub Kategori</label>
+                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showBrand" class="mr-1"> Brand</label>
+                </div>
+                <input type="text" x-model="searchQuery" placeholder="Cari nama produk, kategori, sub kategori, atau brand..." class="form-control">
             </div>
-
-            <input type="text" x-model="searchQuery" placeholder="Cari nama produk, kategori, sub kategori, atau brand..."
-                class="border rounded px-3 py-2 w-full">
         </div>
 
-        <form method="POST" action="{{ route('stock-opnames.update', $opname) }}" class="bg-white rounded shadow overflow-hidden mb-4">
+        <form method="POST" action="{{ route('stock-opnames.update', $opname) }}" class="card">
             @csrf @method('PUT')
 
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="p-3">Produk</th>
-                        <th class="p-3" x-show="showKategori" x-cloak>Kategori</th>
-                        <th class="p-3" x-show="showSubkategori" x-cloak>Sub Kategori</th>
-                        <th class="p-3" x-show="showBrand" x-cloak>Brand</th>
-                        <th class="p-3 text-right">Stock Sistem</th>
-                        <th class="p-3 text-right">Stock Real</th>
-                        <th class="p-3 text-right">Selisih</th>
-                        <th class="p-3">Catatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($opname->items as $item)
-                        @php
-                            $searchable = strtolower($item->product->nama . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? ''));
-                        @endphp
-                        <tr class="border-t" x-show="searchQuery === '' || '{{ addslashes($searchable) }}'.includes(searchQuery.toLowerCase())">
-                            <td class="p-3">{{ $item->product->nama }}</td>
-                            <td class="p-3 text-gray-500" x-show="showKategori" x-cloak>{{ $item->product->category?->nama ?? '-' }}</td>
-                            <td class="p-3 text-gray-500" x-show="showSubkategori" x-cloak>{{ $item->product->subcategory?->nama ?? '-' }}</td>
-                            <td class="p-3 text-gray-500" x-show="showBrand" x-cloak>{{ $item->product->brand?->nama ?? '-' }}</td>
-                            <td class="p-3 text-right">{{ $item->system_stock }}</td>
-                            <td class="p-3 text-right">
-                                <input type="number" name="real_stock[{{ $item->id }}]" value="{{ $item->real_stock }}" min="0"
-                                       class="border rounded px-2 py-1 w-24 text-right" {{ $opname->status === 'completed' ? 'disabled' : '' }}>
-                            </td>
-                            <td class="p-3 text-right {{ $item->difference > 0 ? 'text-green-600' : ($item->difference < 0 ? 'text-red-600' : 'text-gray-400') }}">
-                                {{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }}
-                            </td>
-                            <td class="p-3">
-                                <input type="text" name="notes[{{ $item->id }}]" value="{{ $item->notes }}" placeholder="Alasan selisih (opsional)"
-                                       class="border rounded px-2 py-1 w-full text-xs" {{ $opname->status === 'completed' ? 'disabled' : '' }}>
-                            </td>
+            <div class="card-body p-0 table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th x-show="showKategori" x-cloak>Kategori</th>
+                            <th x-show="showSubkategori" x-cloak>Sub Kategori</th>
+                            <th x-show="showBrand" x-cloak>Brand</th>
+                            <th class="text-right">Stock Sistem</th>
+                            <th class="text-right">Stock Real</th>
+                            <th class="text-right">Selisih</th>
+                            <th>Catatan</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($opname->items as $item)
+                            @php
+                                $searchable = strtolower($item->product->nama . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? ''));
+                            @endphp
+                            <tr x-show="searchQuery === '' || '{{ addslashes($searchable) }}'.includes(searchQuery.toLowerCase())">
+                                <td>{{ $item->product->nama }}</td>
+                                <td class="text-muted" x-show="showKategori" x-cloak>{{ $item->product->category?->nama ?? '-' }}</td>
+                                <td class="text-muted" x-show="showSubkategori" x-cloak>{{ $item->product->subcategory?->nama ?? '-' }}</td>
+                                <td class="text-muted" x-show="showBrand" x-cloak>{{ $item->product->brand?->nama ?? '-' }}</td>
+                                <td class="text-right">{{ $item->system_stock }}</td>
+                                <td class="text-right">
+                                    <input type="number" name="real_stock[{{ $item->id }}]" value="{{ $item->real_stock }}" min="0"
+                                           class="form-control form-control-sm text-right" style="width: 90px; display: inline-block;" {{ $opname->status === 'completed' ? 'disabled' : '' }}>
+                                </td>
+                                <td class="text-right {{ $item->difference > 0 ? 'text-success' : ($item->difference < 0 ? 'text-danger' : 'text-muted') }}">
+                                    {{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }}
+                                </td>
+                                <td>
+                                    <input type="text" name="notes[{{ $item->id }}]" value="{{ $item->notes }}" placeholder="Alasan selisih (opsional)"
+                                           class="form-control form-control-sm" {{ $opname->status === 'completed' ? 'disabled' : '' }}>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
             @if ($opname->status !== 'completed')
-                <div class="p-4 bg-gray-50 border-t">
-                    <button type="submit" class="bg-gray-700 text-white px-6 py-2 rounded">Simpan Stock Real</button>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-secondary">Simpan Stock Real</button>
                 </div>
             @endif
         </form>
@@ -84,14 +79,14 @@
             <form method="POST" action="{{ route('stock-opnames.adjust', $opname) }}"
                   onsubmit="return confirm('Yakin sesuaikan stock sistem sesuai hasil opname ini? Aksi ini akan mengubah stock secara permanen dan tidak bisa diulang untuk opname yang sama.')">
                 @csrf
-                <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded">Sesuaikan Stock Sekarang</button>
+                <button type="submit" class="btn btn-danger">Sesuaikan Stock Sekarang</button>
             </form>
         @else
-            <div class="flex items-center justify-between">
-                <p class="text-green-700 font-medium">Opname ini sudah selesai dan stock telah disesuaikan.</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="text-success font-weight-bold mb-0">Opname ini sudah selesai dan stock telah disesuaikan.</p>
                 <a :href="`{{ route('stock-opnames.pdf', $opname) }}?kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}`"
-                target="_blank" class="bg-gray-700 text-white px-4 py-2 rounded">Download PDF</a>
+                   target="_blank" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Download PDF</a>
             </div>
         @endif
     </div>
-</x-app-layout>
+</x-admin-layout>
