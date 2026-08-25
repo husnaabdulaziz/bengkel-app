@@ -30,10 +30,12 @@
         @endif
 
         <div class="ml-auto">
+            <a href="{{ route('expenses.create') }}" class="btn btn-warning"><i class="fas fa-plus"></i> Tambah Pengeluaran</a>
             <a href="{{ route('expenses.index') }}" class="btn btn-outline-secondary"><i class="fas fa-list"></i> Kelola Pengeluaran</a>
-            <a href="{{ route('reports.financial.pdf', request()->query()) }}" target="_blank" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> PDF</a>
-            <a href="{{ route('reports.financial.excel', request()->query()) }}" class="btn btn-success"><i class="fas fa-file-excel"></i> Excel</a>
-            <a href="{{ route('expenses.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Pengeluaran</a>
+            <a href="{{ route('reports.financial.pdf', request()->query()) }}" target="_blank" class="btn btn-outline-danger" title="Download Summary (PDF)">PDF<i class="fas fa-download"></i></a>
+            <a href="{{ route('reports.financial.excel', request()->query()) }}" class="btn btn-secondary" title="Download Summary (Excel)">Summary<i class="fas fa-download"></i></a>
+            <a href="{{ route('reports.financial.sales-detail-excel', request()->query()) }}" class="btn btn-success" title="Download Detail"> Penjualan Detail<i class="fas fa-download"></i></a>
+            
         </div>
     </form>
 

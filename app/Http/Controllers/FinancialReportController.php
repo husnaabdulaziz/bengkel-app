@@ -100,6 +100,126 @@ class FinancialReportController extends Controller
         ]);
     }
 
+    public function salesDetailIndex(Request $request)
+    {
+        $period = $request->get('period', 'harian');
+        $branchId = $request->get('branch_id');
+
+        if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
+            $start = Carbon::parse($request->get('start_date'))->startOfDay();
+            $end = Carbon::parse($request->get('end_date'))->endOfDay();
+        } else {
+            [$start, $end] = match ($period) {
+                'mingguan' => [now()->startOfWeek(Carbon::MONDAY), now()->endOfWeek(Carbon::SUNDAY)],
+                'bulanan'  => [now()->startOfMonth(), now()->endOfMonth()],
+                'tahunan'  => [now()->startOfYear(), now()->endOfYear()],
+                default    => [now()->startOfDay(), now()->endOfDay()],
+            };
+        }
+
+        $itemCount = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end, $branchId) {
+            $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+            if ($branchId) $q->where('branch_id', $branchId);
+        })->count();
+
+        $branches = auth()->user()->isSuperAdmin() ? Branch::all() : auth()->user()->branches;
+
+        return view('reports.sales-detail', compact('period', 'branchId', 'start', 'end', 'itemCount', 'branches'));
+    }
+
+    public function salesDetailExcel(Request $request)
+    {
+        $period = $request->get('period', 'harian');
+        $branchId = $request->get('branch_id');
+
+        if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
+            $start = Carbon::parse($request->get('start_date'))->startOfDay();
+            $end = Carbon::parse($request->get('end_date'))->endOfDay();
+        } else {
+            [$start, $end] = match ($period) {
+                'mingguan' => [now()->startOfWeek(Carbon::MONDAY), now()->endOfWeek(Carbon::SUNDAY)],
+                'bulanan'  => [now()->startOfMonth(), now()->endOfMonth()],
+                'tahunan'  => [now()->startOfYear(), now()->endOfYear()],
+                default    => [now()->startOfDay(), now()->endOfDay()],
+            };
+        }
+
+        $items = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end, $branchId) {
+                $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+                if ($branchId) $q->where('branch_id', $branchId);
+            })
+            ->with([
+                'workOrder.customer',
+                'workOrder.branch',
+                'product.category',
+                'product.subcategory',
+                'product.brand',
+                'technicians.technician',
+            ])
+            ->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Penjualan Detail');
+
+        $headers = [
+            'Tanggal Transaksi', 'No. Invoice', 'Nama Pelanggan', 'No. Telp', 'Plat Nomor',
+            'Nama Produk', 'Kategori', 'Sub Kategori', 'Brand', 'Qty',
+            'Modal', 'Harga Penjualan', 'Mekanik yang Handle', 'Fee Mekanik',
+        ];
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->getStyle('A1:N1')->getFont()->setBold(true);
+
+        $row = 2;
+        foreach ($items as $item) {
+            $wo = $item->workOrder;
+            $product = $item->product;
+
+            $mekanikNames = $item->technicians->map(function ($t) {
+                return $t->technician?->inisial ?? $t->technician?->name ?? '-';
+            })->implode(', ');
+
+            $feeTotal = $item->technicians->sum('fee_amount');
+
+            $sheet->fromArray([
+                $wo->paid_at?->format('d/m/Y'),
+                $wo->invoice_number,
+                $wo->customer?->nama,
+                $wo->customer?->telpon,
+                $wo->customer?->plat_nomor,
+                $item->item_name,
+                $product?->category?->nama ?? '-',
+                $product?->subcategory?->nama ?? '-',
+                $product?->brand?->nama ?? '-',
+                $item->quantity,
+                ($product?->harga_modal ?? 0) * $item->quantity,
+                $item->subtotal,
+                $mekanikNames ?: '-',
+                $feeTotal,
+            ], null, "A{$row}");
+
+            $row++;
+        }
+
+        foreach (range('A', 'N') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $dateSlug = $start->isSameDay($end)
+            ? $start->format('d-m-y')
+            : $start->format('d-m-y') . ' sd ' . $end->format('d-m-y');
+
+        $filename = 'Laporan Penjualan Detail ' . $dateSlug . '.xlsx';
+
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
     private function calculate(Request $request): array
     {
         $period = $request->get('period', 'harian');

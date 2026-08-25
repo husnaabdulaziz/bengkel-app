@@ -125,17 +125,43 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item">
-                        <a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial*', 'expenses.*') ? 'active' : '' }}">
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('reports.financial*', 'expenses.*', 'reports.technician-fee*', 'cash-closings.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                        <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-money-bill-wave"></i>
-                            <p>Laporan Keuangan</p>
+                            <p>Laporan Keuangan <i class="right fas fa-angle-left"></i></p>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('cash-closings.today') }}" class="nav-link {{ request()->routeIs('cash-closings.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-cash-register"></i>
-                            <p>Kas Harian</p>
-                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lap. Laba Rugi</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('reports.financial.sales-detail') }}" class="nav-link {{ request()->routeIs('reports.financial.sales-detail') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lap. Penjualan Detail</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lap. Pengeluaran</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('reports.technician-fee') }}" class="nav-link {{ request()->routeIs('reports.technician-fee*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Lap. Fee Mekanik</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('cash-closings.today') }}" class="nav-link {{ request()->routeIs('cash-closings.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Kas Harian</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </nav>

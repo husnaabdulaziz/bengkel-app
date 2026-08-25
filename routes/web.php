@@ -100,6 +100,7 @@ Route::get('cash-closings/today', [CashClosingController::class, 'today'])->name
 Route::post('cash-closings/open', [CashClosingController::class, 'open'])->name('cash-closings.open');
 Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
 Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
+Route::get('reports/financial/sales-detail-excel', [FinancialReportController::class, 'salesDetailExcel'])->name('reports.financial.sales-detail-excel');
+Route::get('reports/financial/sales-detail', [FinancialReportController::class, 'salesDetailIndex'])->name('reports.financial.sales-detail');
 
-    
 require __DIR__.'/auth.php';
