@@ -14,11 +14,16 @@
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" href="#" role="button" onclick="event.preventDefault(); if (window.innerWidth < 992) { document.body.classList.toggle('sidebar-open'); } else { document.body.classList.toggle('sidebar-collapse'); } event.stopPropagation();"><i class="fas fa-bars"></i></a>
-            </li>
-        </ul>
+    <ul class="navbar-nav align-items-center">
+        <li class="nav-item">
+            <a class="nav-link" href="#" role="button" onclick="event.preventDefault(); if (window.innerWidth < 992) { document.body.classList.toggle('sidebar-open'); } else { document.body.classList.toggle('sidebar-collapse'); } event.stopPropagation();"><i class="fas fa-bars"></i></a>
+        </li>
+        <li class="nav-item ml-2">
+            <a href="{{ route('pos.create') }}" class="btn btn-warning btn-sm text-dark font-weight-bold">
+                <i class="fas fa-plus"></i> Tambah Transaksi
+            </a>
+        </li>
+    </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item dropdown" @click.outside="userMenuOpen = false">
     <a class="nav-link" href="#" @click.prevent="userMenuOpen = !userMenuOpen">
@@ -51,7 +56,16 @@
                             <p>Dashboard</p>
                         </a>
                     </li>
-
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('pos.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                            <a href="#" class="nav-link" @click.prevent="open = !open">
+                                <i class="nav-icon fas fa-cash-register"></i>
+                                <p>POS <i class="right fas fa-angle-left"></i></p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                            <li class="nav-item"><a href="{{ route('pos.create') }}" class="nav-link {{ request()->routeIs('pos.create') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Tambah Transaksi</p></a></li>
+                            <li class="nav-item"><a href="{{ route('pos.queue') }}" class="nav-link {{ request()->routeIs('pos.queue') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Daftar Transaksi</p></a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('products.*', 'product-categories.*', 'product-subcategories.*', 'product-brands.*', 'suppliers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                         <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-box"></i>
@@ -84,28 +98,32 @@
                         </ul>
                     </li>
 
-                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('pos.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
-                            <a href="#" class="nav-link" @click.prevent="open = !open">
-                                <i class="nav-icon fas fa-cash-register"></i>
-                                <p>POS <i class="right fas fa-angle-left"></i></p>
-                            </a>
-                            <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ route('pos.create') }}" class="nav-link {{ request()->routeIs('pos.create') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Tambah Transaksi</p></a></li>
-                            <li class="nav-item"><a href="{{ route('pos.queue') }}" class="nav-link {{ request()->routeIs('pos.queue') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Daftar Transaksi</p></a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="{{ route('technicians.index') }}" class="nav-link {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-cog"></i>
-                            <p>Mekanik</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('reports.technician-fee') }}" class="nav-link {{ request()->routeIs('reports.technician-fee*') ? 'active' : '' }}">
+                    
+                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('technicians.*', 'reports.technician-fee*', 'technician-manual-fees.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                        <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-file-invoice-dollar"></i>
-                            <p>Fee Mekanik</p>
+                            <p>Fee Mekanik <i class="right fas fa-angle-left"></i></p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('technicians.index') }}" class="nav-link {{ request()->routeIs('technicians.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Daftar Mekanik</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('reports.technician-fee') }}" class="nav-link {{ request()->routeIs('reports.technician-fee*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Laporan Fee</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('technician-manual-fees.index') }}" class="nav-link {{ request()->routeIs('technician-manual-fees.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Fee Manual</p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </nav>

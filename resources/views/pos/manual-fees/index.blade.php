@@ -1,57 +1,54 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Fee Mekanik Manual</h2>
-    </x-slot>
+<x-admin-layout title="Fee Mekanik Manual">
 
-    <div class="py-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
-        @endif
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 0.5rem;">
+        <select onchange="window.location.href = this.value" class="form-control" style="width: auto;">
+            <option value="{{ route('technician-manual-fees.index') }}">Semua Mekanik</option>
+            @foreach ($technicians as $tech)
+                <option value="{{ route('technician-manual-fees.index', ['technician_id' => $tech->id]) }}" @selected(request('technician_id') == $tech->id)>{{ $tech->name }}</option>
+            @endforeach
+        </select>
+        <a href="{{ route('technician-manual-fees.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Input Fee Manual</a>
+    </div>
 
-        <div class="flex justify-between items-center mb-4">
-            <div class="relative inline-block">
-                <select onchange="window.location.href = this.value"
-                        class="border rounded px-3 py-2 pr-8 bg-white"
-                        style="appearance: none; -webkit-appearance: none; -moz-appearance: none;">
-                    <option value="{{ route('technician-manual-fees.index') }}">Semua Mekanik</option>
-                    @foreach ($technicians as $tech)
-                        <option value="{{ route('technician-manual-fees.index', ['technician_id' => $tech->id]) }}" @selected(request('technician_id') == $tech->id)>{{ $tech->name }}</option>
-                    @endforeach
-                </select>
-                <svg class="w-4 h-4 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </div>
-            <a href="{{ route('technician-manual-fees.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Input Fee Manual</a>
-        </div>
-
-        <div class="bg-white rounded shadow overflow-x-auto">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-100">
+    <div class="card">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
                     <tr>
-                        <th class="p-3">Tanggal</th>
-                        <th class="p-3">Mekanik</th>
-                        <th class="p-3">Produk</th>
-                        <th class="p-3">Keterangan</th>
-                        <th class="p-3 text-right">Fee</th>
+                        <th>Tanggal</th>
+                        <th>Mekanik</th>
+                        <th class="d-none d-md-table-cell">Produk</th>
+                        <th>Keterangan</th>
+                        <th class="text-right">Fee</th>
+                        <th style="width: 70px;"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($fees as $fee)
-                        <tr class="border-t">
-                            <td class="p-3">{{ $fee->transaction_date->format('d/m/Y') }}</td>
-                            <td class="p-3">{{ $fee->technician->name }}</td>
-                            <td class="p-3">{{ $fee->product?->nama ?? '-' }}</td>
-                            <td class="p-3">{{ $fee->notes }}</td>
-                            <td class="p-3 text-right">Rp {{ number_format($fee->fee_amount, 0, ',', '.') }}</td>
+                        <tr>
+                            <td>{{ $fee->transaction_date->format('d/m/Y') }}</td>
+                            <td>{{ $fee->technician->name }}</td>
+                            <td class="d-none d-md-table-cell">{{ $fee->product?->nama ?? '-' }}</td>
+                            <td>{{ $fee->notes }}</td>
+                            <td class="text-right">Rp {{ number_format($fee->fee_amount, 0, ',', '.') }}</td>
+                            <td class="text-nowrap">
+                                <a href="{{ route('technician-manual-fees.edit', $fee) }}" class="btn btn-outline-primary" title="Edit" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ route('technician-manual-fees.destroy', $fee) }}" class="d-inline" onsubmit="return confirm('Hapus data fee ini?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger" title="Hapus" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">Belum ada data.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="mt-4">{{ $fees->links() }}</div>
     </div>
-</x-app-layout>
+    {{ $fees->links() }}
+</x-admin-layout>

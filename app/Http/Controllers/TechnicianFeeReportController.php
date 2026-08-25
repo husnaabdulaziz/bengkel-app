@@ -114,15 +114,20 @@ class TechnicianFeeReportController extends Controller
 
     /** Ambil SEMUA data sesuai filter (tanpa dipotong halaman) - dipakai baik untuk web (lalu dipaginasi) maupun PDF (full) */
     private function getReportData(Request $request): array
-    {
-        $period = $request->get('period', 'harian');
-        $technicianId = $request->get('technician_id');
+{
+    $period = $request->get('period', 'harian');
+    $technicianId = $request->get('technician_id');
 
+    if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
+        $start = Carbon::parse($request->get('start_date'))->startOfDay();
+        $end = Carbon::parse($request->get('end_date'))->endOfDay();
+    } else {
         [$start, $end] = match ($period) {
             'bulanan' => [now()->startOfMonth(), now()->endOfMonth()],
             'tahunan' => [now()->startOfYear(), now()->endOfYear()],
             default   => [now()->startOfDay(), now()->endOfDay()],
         };
+    }
 
         $autoQuery = WorkOrderItemTechnician::with(['technician', 'item.product', 'item.workOrder'])
             ->whereHas('item.workOrder', function ($q) use ($start, $end) {

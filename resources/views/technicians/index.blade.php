@@ -1,50 +1,46 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Manajemen Mekanik</h2>
-    </x-slot>
+<x-admin-layout title="Manajemen Mekanik">
 
-    <div class="py-6 max-w-4xl mx-auto sm:px-6 lg:px-8">
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-100 text-green-700 rounded">{{ session('success') }}</div>
-        @endif
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{{ route('technicians.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Mekanik</a>
+    </div>
 
-        <div class="flex justify-end mb-4">
-            <a href="{{ route('technicians.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded">+ Tambah Mekanik</a>
-        </div>
-
-        <div class="bg-white rounded shadow overflow-hidden">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-100">
+    <div class="card">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
                     <tr>
-                        <th class="p-3">Nama Lengkap</th>
-                        <th class="p-3">Inisial</th>
-                        <th class="p-3">Telpon</th>
-                        <th class="p-3">Email</th>
-                        <th class="p-3 w-32">Aksi</th>
+                        <th>Nama Lengkap</th>
+                        <th>Inisial</th>
+                        <th class="d-none d-md-table-cell">Telpon</th>
+                        <th class="d-none d-md-table-cell">Email</th>
+                        <th style="width: 90px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($technicians as $tech)
-                        <tr class="border-t">
-                            <td class="p-3">{{ $tech->name }}</td>
-                            <td class="p-3"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-semibold">{{ $tech->inisial }}</span></td>
-                            <td class="p-3">{{ $tech->phone }}</td>
-                            <td class="p-3">{{ $tech->email }}</td>
-                            <td class="p-3">
-                                <a href="{{ route('technicians.edit', $tech) }}" class="text-blue-600 text-sm">Edit</a>
-                                <form method="POST" action="{{ route('technicians.destroy', $tech) }}" class="inline" onsubmit="return confirm('Hapus mekanik ini?')">
+                        <tr>
+                            <td>{{ $tech->name }}</td>
+                            <td><span class="badge badge-info">{{ $tech->inisial }}</span></td>
+                            <td class="d-none d-md-table-cell">{{ $tech->phone }}</td>
+                            <td class="d-none d-md-table-cell">{{ $tech->email }}</td>
+                            <td class="text-nowrap">
+                                <a href="{{ route('technicians.edit', $tech) }}" class="btn btn-outline-primary" title="Edit" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-edit"></i></a>
+                                <form method="POST" action="{{ route('technicians.destroy', $tech) }}" class="d-inline" onsubmit="return confirm('Hapus mekanik ini?')">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="text-red-600 text-sm ml-2">Hapus</button>
+                                    <button type="submit" class="btn btn-outline-danger" title="Hapus" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="p-3 text-gray-500 text-center">Belum ada mekanik.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted py-4">Belum ada mekanik.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="mt-4">{{ $technicians->links() }}</div>
     </div>
-</x-app-layout>
+    {{ $technicians->links() }}
+</x-admin-layout>

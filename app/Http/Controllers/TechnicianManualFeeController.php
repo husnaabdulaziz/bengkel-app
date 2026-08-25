@@ -49,7 +49,11 @@ class TechnicianManualFeeController extends Controller
         $technicianManualFee->delete();
         return back()->with('success', 'Data fee manual dihapus.');
     }
-
+    public function edit(\App\Models\TechnicianManualFee $technicianManualFee)
+    {
+        $technicians = \App\Models\User::role('teknisi')->orderBy('name')->get();
+        return view('pos.manual-fees.edit', ['fee' => $technicianManualFee, 'technicians' => $technicians]);
+    }
 
 
 }
