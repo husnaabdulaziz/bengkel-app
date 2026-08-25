@@ -1,5 +1,7 @@
 <x-admin-layout title="Vendor">
 
+    <div style="max-width: 900px;" class="mx-auto">
+
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -42,5 +44,7 @@
             </table>
         </div>
     </div>
-    {{ $suppliers->links() }}
+        {{ $suppliers->links() }}
+
+       </div>
 </x-admin-layout>

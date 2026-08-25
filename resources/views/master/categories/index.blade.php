@@ -1,5 +1,7 @@
 <x-admin-layout title="Kategori Produk">
 
+    <div style="max-width: 900px;" class="mx-auto">
+
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -43,5 +45,7 @@
             </table>
         </div>
     </div>
-    {{ $categories->links() }}
+        {{ $categories->links() }}
+
+    </div>
 </x-admin-layout>
