@@ -77,7 +77,7 @@ class StockOpnameController extends Controller
 
     public function edit(StockOpname $stockOpname)
     {
-        $stockOpname->load('items.product', 'branch');
+        $stockOpname->load('items.product.category', 'items.product.subcategory', 'items.product.brand', 'branch');
         return view('inventory.opnames.edit', ['opname' => $stockOpname]);
     }
 
@@ -86,12 +86,17 @@ class StockOpnameController extends Controller
         $validated = $request->validate([
             'real_stock' => 'required|array',
             'real_stock.*' => 'required|integer|min:0',
+            'notes' => 'nullable|array',
+            'notes.*' => 'nullable|string|max:255',
         ]);
 
         foreach ($validated['real_stock'] as $itemId => $realStock) {
             StockOpnameItem::where('id', $itemId)
                 ->where('stock_opname_id', $stockOpname->id)
-                ->update(['real_stock' => $realStock]);
+                ->update([
+                    'real_stock' => $realStock,
+                    'notes' => $validated['notes'][$itemId] ?? null,
+                ]);
         }
 
         return back()->with('success', 'Stock real berhasil disimpan. Cek selisih sebelum menyesuaikan stock.');

@@ -8,7 +8,7 @@ class StockOpnameItem extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['stock_opname_id', 'product_id', 'system_stock', 'real_stock'];
+    protected $fillable = ['stock_opname_id', 'product_id', 'system_stock', 'real_stock', 'notes'];
 
     protected $appends = ['difference'];
 

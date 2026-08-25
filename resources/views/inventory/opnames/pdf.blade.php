@@ -32,6 +32,7 @@
                 <th class="text-right">Stock Sistem</th>
                 <th class="text-right">Stock Real</th>
                 <th class="text-right">Selisih</th>
+                <th>Catatan</th>
             </tr>
         </thead>
         <tbody>
@@ -43,6 +44,7 @@
                     <td class="text-right {{ $item->difference > 0 ? 'text-green' : ($item->difference < 0 ? 'text-red' : '') }}">
                         {{ $item->difference > 0 ? '+' : '' }}{{ $item->difference }}
                     </td>
+                    <td>{{ $item->notes ?? '-' }}</td>
                 </tr>
             @endforeach
         </tbody>
