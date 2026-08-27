@@ -1,53 +1,79 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductBrandController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductSubcategoryController;
+use App\Http\Controllers\StockTransferController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\PosController;
+use App\Http\Controllers\TechnicianFeeReportController;
+use App\Http\Controllers\TechnicianManualFeeController;
+use App\Http\Controllers\TechnicianController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\CashClosingController;
+use App\Http\Controllers\WarrantyController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-use App\Http\Controllers\DashboardController;
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
-Route::get('/dashboard/data', [DashboardController::class, 'data'])->middleware(['auth', 'verified'])->name('dashboard.data');
+// ===== Profile (semua user login boleh edit profil sendiri, tidak perlu permission khusus) =====
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-use App\Http\Controllers\ProductCategoryController;
-use App\Http\Controllers\ProductBrandController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\ProductController;
-use App\Http\Controllers\StockTransferController;
-
-Route::middleware(['auth'])->group(function () {
-    Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
-    Route::resource('product-brands', ProductBrandController::class)->except(['show', 'create', 'edit']);
-    Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
-    Route::resource('products', ProductController::class)->except(['show']);
-    Route::get('products-data', [ProductController::class, 'data'])->name('products.data');
+// ===== Dashboard =====
+Route::middleware(['auth', 'verified', 'permission:access_dashboard'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 });
 
-use App\Http\Controllers\PurchaseController;
-Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
+// ===== Produk =====
+Route::middleware(['auth', 'permission:access_produk'])->group(function () {
+    Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::resource('product-brands', ProductBrandController::class)->except(['show', 'create', 'edit']);
+    Route::post('product-brands/quick', [ProductBrandController::class, 'quickStore'])->name('product-brands.quick');
+    Route::resource('suppliers', SupplierController::class)->except(['show', 'create', 'edit']);
+    Route::post('suppliers/quick', [SupplierController::class, 'quickStore'])->name('suppliers.quick');
+    Route::resource('products', ProductController::class)->except(['show']);
+    Route::get('products-data', [ProductController::class, 'data'])->name('products.data');
+    Route::resource('product-subcategories', ProductSubcategoryController::class)
+        ->parameters(['product-subcategories' => 'subcategory'])
+        ->except(['show', 'create', 'edit']);
+    Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
+});
 
-use App\Http\Controllers\StockOpnameController;
+// ===== Pembelian =====
+Route::middleware(['auth', 'permission:access_pembelian'])->group(function () {
+    Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
+});
 
-Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update']);
-Route::post('stock-opnames/{stockOpname}/adjust', [StockOpnameController::class, 'adjust'])->name('stock-opnames.adjust');
-Route::get('stock-opnames/{stockOpname}/pdf', [StockOpnameController::class, 'pdf'])->name('stock-opnames.pdf');
-//transfer
-Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show']);
-Route::post('stock-transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('stock-transfers.approve');
-Route::post('stock-transfers/{stockTransfer}/ship', [StockTransferController::class, 'ship'])->name('stock-transfers.ship');
-Route::post('stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive'])->name('stock-transfers.receive');
+// ===== Stock =====
+Route::middleware(['auth', 'permission:access_stock'])->group(function () {
+    Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::post('stock-opnames/{stockOpname}/adjust', [StockOpnameController::class, 'adjust'])->name('stock-opnames.adjust');
+    Route::get('stock-opnames/{stockOpname}/pdf', [StockOpnameController::class, 'pdf'])->name('stock-opnames.pdf');
 
-//POS
-use App\Http\Controllers\PosController;
+    Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('stock-transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('stock-transfers.approve');
+    Route::post('stock-transfers/{stockTransfer}/ship', [StockTransferController::class, 'ship'])->name('stock-transfers.ship');
+    Route::post('stock-transfers/{stockTransfer}/receive', [StockTransferController::class, 'receive'])->name('stock-transfers.receive');
+});
 
-Route::prefix('pos')->name('pos.')->group(function () {
+// ===== POS =====
+Route::middleware(['auth', 'permission:access_pos'])->prefix('pos')->name('pos.')->group(function () {
     Route::get('/new', [PosController::class, 'create'])->name('create');
     Route::post('/', [PosController::class, 'store'])->name('store');
     Route::get('/search-customer', [PosController::class, 'searchCustomer'])->name('search-customer');
@@ -65,59 +91,68 @@ Route::prefix('pos')->name('pos.')->group(function () {
     Route::post('/queue/{workOrder}/technicians', [PosController::class, 'updateTechnicians'])->name('queue.update-technicians');
 });
 
-use App\Http\Controllers\TechnicianFeeReportController;
-Route::get('reports/technician-fee', [TechnicianFeeReportController::class, 'index'])->name('reports.technician-fee');
-Route::get('reports/technician-fee/pdf', [TechnicianFeeReportController::class, 'pdf'])->name('reports.technician-fee.pdf');
+// ===== Mekanik & Fee Mekanik =====
+Route::middleware(['auth', 'permission:access_mekanik'])->group(function () {
+    Route::resource('technicians', TechnicianController::class)->parameters(['technicians' => 'technician']);
+    Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+});
 
-use App\Http\Controllers\TechnicianManualFeeController;
-Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+// reports/technician-fee dipakai di 2 menu (Fee Mekanik & Laporan Keuangan), jadi terima salah satu permission
+Route::middleware(['auth', 'permission:access_mekanik|access_laporan_keuangan'])->group(function () {
+    Route::get('reports/technician-fee', [TechnicianFeeReportController::class, 'index'])->name('reports.technician-fee');
+    Route::get('reports/technician-fee/pdf', [TechnicianFeeReportController::class, 'pdf'])->name('reports.technician-fee.pdf');
+    Route::patch('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'updateFee'])->name('reports.technician-fee.update');
+    Route::get('reports/technician-fee/{workOrderItemTechnician}/edit', [TechnicianFeeReportController::class, 'edit'])->name('reports.technician-fee.edit');
+    Route::delete('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'destroy'])->name('reports.technician-fee.destroy');
+});
 
-use App\Http\Controllers\TechnicianController;
-Route::resource('technicians', TechnicianController::class)->parameters(['technicians' => 'technician']);
-Route::patch('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'updateFee'])->name('reports.technician-fee.update');
-Route::get('reports/technician-fee/{workOrderItemTechnician}/edit', [TechnicianFeeReportController::class, 'edit'])->name('reports.technician-fee.edit');
-Route::delete('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'destroy'])->name('reports.technician-fee.destroy');
-use App\Http\Controllers\ProductSubcategoryController;
+// ===== Laporan Keuangan =====
+Route::middleware(['auth', 'permission:access_laporan_keuangan'])->group(function () {
+    Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'destroy']);
 
-Route::resource('product-subcategories', ProductSubcategoryController::class)
-    ->parameters(['product-subcategories' => 'subcategory'])
-    ->except(['show', 'create', 'edit']);
+    Route::get('reports/financial', [FinancialReportController::class, 'index'])->name('reports.financial');
+    Route::get('reports/financial/pdf', [FinancialReportController::class, 'pdf'])->name('reports.financial.pdf');
+    Route::get('reports/financial/excel', [FinancialReportController::class, 'excel'])->name('reports.financial.excel');
+    Route::get('reports/financial/sales-detail', [FinancialReportController::class, 'salesDetailIndex'])->name('reports.financial.sales-detail');
+    Route::get('reports/financial/sales-detail-excel', [FinancialReportController::class, 'salesDetailExcel'])->name('reports.financial.sales-detail-excel');
+});
 
-Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
-Route::post('product-brands/quick', [ProductBrandController::class, 'quickStore'])->name('product-brands.quick');
-Route::post('suppliers/quick', [SupplierController::class, 'quickStore'])->name('suppliers.quick');
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\FinancialReportController;
+// ===== Kas Harian =====
+Route::middleware(['auth', 'permission:access_kas_harian'])->group(function () {
+    Route::get('cash-closings/today', [CashClosingController::class, 'today'])->name('cash-closings.today');
+    Route::post('cash-closings/open', [CashClosingController::class, 'open'])->name('cash-closings.open');
+    Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
+    Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class, 'reopen'])->name('cash-closings.reopen');
+    Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
+});
 
-Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'destroy']);
+// ===== Garansi =====
+Route::middleware(['auth', 'permission:access_garansi'])->group(function () {
+    Route::get('warranties', [WarrantyController::class, 'index'])->name('warranties.index');
+    Route::get('warranties/{warranty}', [WarrantyController::class, 'show'])->name('warranties.show');
+    Route::post('warranties/{warranty}/claim', [WarrantyController::class, 'claim'])->name('warranties.claim');
+});
 
-Route::get('reports/financial', [FinancialReportController::class, 'index'])->name('reports.financial');
-Route::get('reports/financial/pdf', [FinancialReportController::class, 'pdf'])->name('reports.financial.pdf');
-Route::get('reports/financial/excel', [FinancialReportController::class, 'excel'])->name('reports.financial.excel');
-use App\Http\Controllers\CashClosingController;
+// ===== Pelanggan =====
+Route::middleware(['auth', 'permission:access_pelanggan'])->group(function () {
+    Route::resource('customers', CustomerController::class)->only(['index', 'show', 'edit', 'update']);
+    Route::get('customers-export', [CustomerController::class, 'export'])->name('customers.export');
+});
 
-Route::get('cash-closings/today', [CashClosingController::class, 'today'])->name('cash-closings.today');
-Route::post('cash-closings/open', [CashClosingController::class, 'open'])->name('cash-closings.open');
-Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
-Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
-Route::get('reports/financial/sales-detail-excel', [FinancialReportController::class, 'salesDetailExcel'])->name('reports.financial.sales-detail-excel');
-Route::get('reports/financial/sales-detail', [FinancialReportController::class, 'salesDetailIndex'])->name('reports.financial.sales-detail');
-use App\Http\Controllers\WarrantyController;
+// ===== Log Aktivitas =====
+Route::middleware(['auth', 'permission:access_log_aktivitas'])->group(function () {
+    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+});
 
-Route::get('warranties', [WarrantyController::class, 'index'])->name('warranties.index');
-Route::get('warranties/{warranty}', [WarrantyController::class, 'show'])->name('warranties.show');
-Route::post('warranties/{warranty}/claim', [WarrantyController::class, 'claim'])->name('warranties.claim');
-use App\Http\Controllers\CustomerController;
+// ===== Pengaturan Toko =====
+Route::middleware(['auth', 'permission:access_pengaturan_toko'])->group(function () {
+    Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+    Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
-Route::resource('customers', CustomerController::class)->only(['index', 'show', 'edit', 'update']);
-Route::get('customers-export', [CustomerController::class, 'export'])->name('customers.export');
-Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class, 'reopen'])->name('cash-closings.reopen');
-use App\Http\Controllers\ActivityLogController;
+    Route::get('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'edit'])->name('settings.karyawan-access');
+    Route::post('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'update'])->name('settings.karyawan-access.update');
+});
 
-Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-use App\Http\Controllers\SettingController;
 
-Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
-Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
 require __DIR__.'/auth.php';

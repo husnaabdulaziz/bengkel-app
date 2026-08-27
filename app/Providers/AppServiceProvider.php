@@ -26,6 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            return $user->is_super_admin ? true : null;
+        });
+        
         Company::observe(CompanyObserver::class);
         StockMovement::observe(StockMovementObserver::class);
 

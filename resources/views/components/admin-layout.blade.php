@@ -148,12 +148,16 @@
         <div class="sidebar">
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu">
+                    @can('access_dashboard')
                     <li class="nav-item">
                         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-home"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
+                    @endcan
+
+                    @can('access_pos')
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('pos.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                             <a href="#" class="nav-link" @click.prevent="open = !open">
                                 <i class="nav-icon fas fa-cash-register"></i>
@@ -164,6 +168,9 @@
                             <li class="nav-item"><a href="{{ route('pos.queue') }}" class="nav-link {{ request()->routeIs('pos.queue') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Daftar Transaksi</p></a></li>
                         </ul>
                     </li>
+                    @endcan
+
+                    @can('access_produk')
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('products.*', 'product-categories.*', 'product-subcategories.*', 'product-brands.*', 'suppliers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                         <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-box"></i>
@@ -177,20 +184,27 @@
                             <li class="nav-item"><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Vendor</p></a></li>
                         </ul>
                     </li>
+                    @endcan
+
+                    @can('access_garansi')
                     <li class="nav-item">
                         <a href="{{ route('warranties.index') }}" class="nav-link {{ request()->routeIs('warranties.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shield-alt"></i>
                             <p>Garansi</p>
                         </a>
                     </li>
+                    @endcan
 
+                    @can('access_pembelian')
                     <li class="nav-item">
                         <a href="{{ route('purchases.index') }}" class="nav-link {{ request()->routeIs('purchases.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
                             <p>Pembelian</p>
                         </a>
                     </li>
+                    @endcan
 
+                    @can('access_stock')
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('stock-opnames.*', 'stock-transfers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                     <a href="#" class="nav-link" @click.prevent="open = !open">
                         <i class="nav-icon fas fa-boxes"></i>
@@ -201,8 +215,9 @@
                             <li class="nav-item"><a href="{{ route('stock-transfers.index') }}" class="nav-link {{ request()->routeIs('stock-transfers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Transfer Stock</p></a></li>
                         </ul>
                     </li>
+                    @endcan
 
-                    
+                    @can('access_mekanik')
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('technicians.*', 'reports.technician-fee*', 'technician-manual-fees.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                         <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-file-invoice-dollar"></i>
@@ -229,18 +244,25 @@
                             </li>
                         </ul>
                     </li>
+                    @endcan
+
+                    @can('access_pelanggan')
                     <li class="nav-item">
                         <a href="{{ route('customers.index') }}" class="nav-link {{ request()->routeIs('customers.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-address-book"></i>
                             <p>Pelanggan</p>
                         </a>
                     </li>
+                    @endcan
+
+                    @canany(['access_laporan_keuangan', 'access_kas_harian'])
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('reports.financial*', 'expenses.*', 'reports.technician-fee*', 'cash-closings.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
                         <a href="#" class="nav-link" @click.prevent="open = !open">
                             <i class="nav-icon fas fa-money-bill-wave"></i>
                             <p>Laporan Keuangan <i class="right fas fa-angle-left"></i></p>
                         </a>
                         <ul class="nav nav-treeview">
+                            @can('access_laporan_keuangan')
                             <li class="nav-item">
                                 <a href="{{ route('reports.financial') }}" class="nav-link {{ request()->routeIs('reports.financial') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
@@ -265,26 +287,36 @@
                                     <p>Lap. Fee Mekanik</p>
                                 </a>
                             </li>
+                            @endcan
+                            @can('access_kas_harian')
                             <li class="nav-item">
                                 <a href="{{ route('cash-closings.today') }}" class="nav-link {{ request()->routeIs('cash-closings.*') ? 'active' : '' }}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Kas Harian</p>
                                 </a>
                             </li>
+                            @endcan
                         </ul>
                     </li>
+                    @endcanany
+
+                    @can('access_log_aktivitas')
                     <li class="nav-item">
                         <a href="{{ route('activity-logs.index') }}" class="nav-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-history"></i>
                             <p>Log Aktivitas</p>
                         </a>
                     </li>
+                    @endcan
+
+                    @can('access_pengaturan_toko')
                     <li class="nav-item">
                         <a href="{{ route('settings.edit') }}" class="nav-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cog"></i>
                             <p>Pengaturan Toko</p>
                         </a>
                     </li>
+                    @endcan
                 </ul>
             </nav>
         </div>

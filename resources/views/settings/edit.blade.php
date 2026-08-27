@@ -95,5 +95,8 @@
                 <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
             </div>
         </form>
+        <div class="text-center mt-3">
+            <a href="{{ route('settings.karyawan-access') }}" class="text-muted"><i class="fas fa-users-cog"></i> Atur Hak Akses Karyawan Toko</a>
+        </div>
     </div>
 </x-admin-layout>

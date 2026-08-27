@@ -17,8 +17,8 @@
 <body>
     <div class="center">
         <strong>{{ $workOrder->branch->company->nama_toko }}</strong><br>
-        {{ $workOrder->branch->nama_cabang }}<br>
-        {{ $workOrder->branch->alamat }}
+        {{ $workOrder->branch->company->alamat_toko }}<br>
+        Telp: {{ $workOrder->branch->company->telpon }}
     </div>
     <hr>
     <div>
