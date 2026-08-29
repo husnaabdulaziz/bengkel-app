@@ -41,10 +41,11 @@
                                     <span class="badge badge-success">Selesai</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-nowrap">
                                 @if ($purchase->status === 'pending')
                                     <a href="{{ route('purchases.receive.show', $purchase) }}" class="btn btn-sm btn-outline-success">Terima Barang</a>
                                 @endif
+                                <a href="{{ route('purchases.pdf', $purchase) }}" target="_blank" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i></a>
                             </td>
                         </tr>
                     @empty

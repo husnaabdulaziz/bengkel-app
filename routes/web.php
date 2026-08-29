@@ -76,6 +76,8 @@ Route::middleware(['auth', 'menu_permission:access_pembelian'])->group(function 
     Route::post('purchases/store-po', [PurchaseController::class, 'storePO'])->name('purchases.store-po');
     Route::get('purchases/{purchase}/receive', [PurchaseController::class, 'showReceive'])->name('purchases.receive.show');
     Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive');
+    
+    Route::get('purchases/{purchase}/pdf', [PurchaseController::class, 'pdf'])->name('purchases.pdf');
 });
 
 // ===== Stock Opname =====

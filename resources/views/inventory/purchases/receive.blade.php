@@ -44,8 +44,8 @@
             @csrf
             <div class="card-body">
                 <div class="form-group">
-                    <label>No. Invoice dari Vendor</label>
-                    <input type="text" name="invoice_number" required class="form-control" placeholder="Masukkan nomor invoice/faktur asli dari vendor">
+                    <label>No. Invoice dari Vendor (opsional)</label>
+                    <input type="text" name="invoice_number" class="form-control" placeholder="Kosongkan kalau vendor tidak kasih nomor invoice">
                 </div>
             </div>
             <div class="card-footer">

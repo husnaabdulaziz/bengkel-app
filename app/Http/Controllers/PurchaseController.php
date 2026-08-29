@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Models\StockMovement;
@@ -36,7 +37,7 @@ class PurchaseController extends Controller
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'supplier_id' => 'required|exists:suppliers,id',
-            'invoice_number' => 'required|string|max:60',
+            'invoice_number' => 'nullable|string|max:60',
             'purchase_date' => 'required|date',
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|exists:products,id',
@@ -49,7 +50,7 @@ class PurchaseController extends Controller
             $purchase = Purchase::create([
                 'branch_id' => $validated['branch_id'],
                 'supplier_id' => $validated['supplier_id'],
-                'invoice_number' => $validated['invoice_number'],
+                'invoice_number' => $validated['invoice_number'] ?: 'TANPA-INV-' . now()->format('YmdHis') . '-' . rand(100, 999),
                 'purchase_date' => $validated['purchase_date'],
                 'total_amount' => $total,
                 'status' => 'completed',
@@ -172,7 +173,7 @@ class PurchaseController extends Controller
         abort_if($purchase->status !== 'pending', 404);
 
         $validated = $request->validate([
-            'invoice_number' => 'required|string|max:60',
+            'invoice_number' => 'nullable|string|max:60',
             'prices' => 'nullable|array',
         ]);
 
@@ -203,12 +204,12 @@ class PurchaseController extends Controller
                     'quantity' => $item->quantity,
                     'reference_type' => 'purchase',
                     'reference_id' => $purchase->id,
-                    'notes' => 'Pembelian dari supplier #' . $validated['invoice_number'],
+                    'notes' => 'Pembelian dari supplier #' . ($validated['invoice_number'] ?: 'Tidak ada nomor invoice'),
                 ]);
             }
 
             $purchase->update([
-                'invoice_number' => $validated['invoice_number'],
+                'invoice_number' => $validated['invoice_number'] ?: 'TANPA-INV-' . now()->format('YmdHis') . '-' . rand(100, 999),
                 'status' => 'completed',
                 'total_amount' => $newTotal,
             ]);
@@ -216,4 +217,27 @@ class PurchaseController extends Controller
 
         return redirect()->route('purchases.index')->with('success', 'Barang diterima, stock dan Harga Modal produk otomatis ter-update.');
     }
+
+    public function pdf(Purchase $purchase)
+    {
+        $purchase->load('items.product', 'supplier', 'branch.company');
+        $company = $purchase->branch->company ?? auth()->user()->company;
+
+        $logoBase64 = null;
+        if ($company && $company->logo_path && file_exists(public_path('storage/' . $company->logo_path))) {
+            $logoData = file_get_contents(public_path('storage/' . $company->logo_path));
+            $logoBase64 = 'data:image/' . pathinfo($company->logo_path, PATHINFO_EXTENSION) . ';base64,' . base64_encode($logoData);
+        }
+
+        $pdf = Pdf::loadView('inventory.purchases.pdf', [
+            'purchase' => $purchase,
+            'company' => $company,
+            'logoBase64' => $logoBase64,
+        ]);
+
+        $filename = 'PO-' . ($purchase->invoice_number ?? $purchase->id) . '-' . $purchase->supplier->nama . '.pdf';
+
+        return $pdf->stream($filename);
+    }
+
 }

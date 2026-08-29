@@ -53,7 +53,7 @@
 
                 <div class="col-md-6 form-group">
                     <label>No. Invoice Vendor</label>
-                    <input type="text" name="invoice_number" required class="form-control">
+                    <input type="text" name="invoice_number" class="form-control" placeholder="Kosongkan kalau tidak ada nomor invoice">
                 </div>
                 <div class="col-md-6 form-group">
                     <label>Tanggal Faktur</label>
