@@ -123,7 +123,33 @@
         </li>
     </ul>
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item dropdown" @click.outside="userMenuOpen = false">
+    @if (auth()->user()->company_id)
+        @php $lowStockItems = \App\Http\Controllers\LowStockController::getLowStockItems(); @endphp
+        <li class="nav-item dropdown" @click.outside="notifOpen = false" x-data="{ notifOpen: false }">
+            <a class="nav-link" href="#" @click.prevent="notifOpen = !notifOpen">
+                <i class="far fa-bell"></i>
+                @if ($lowStockItems->count() > 0)
+                    <span class="badge badge-danger navbar-badge">{{ $lowStockItems->count() }}</span>
+                @endif
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right" :class="{ 'show': notifOpen }" style="position: absolute; right: 0; min-width: 300px;">
+                <span class="dropdown-item dropdown-header">{{ $lowStockItems->count() }} Produk Stock Menipis</span>
+                <div class="dropdown-divider"></div>
+                @forelse ($lowStockItems->take(5) as $item)
+                    <a href="{{ route('products.low-stock') }}" class="dropdown-item">
+                        <i class="fas fa-exclamation-triangle {{ $item->stock_qty <= 0 ? 'text-danger' : 'text-warning' }} mr-2"></i>
+                        {{ $item->product->nama }}
+                        <span class="float-right text-muted text-sm">{{ $item->stock_qty }} / min {{ $item->product->minimum_stock }}</span>
+                    </a>
+                    <div class="dropdown-divider"></div>
+                @empty
+                    <span class="dropdown-item text-muted">Semua stock aman.</span>
+                @endforelse
+                <a href="{{ route('products.low-stock') }}" class="dropdown-item dropdown-footer">Lihat Semua</a>
+            </div>
+        </li>
+    @endif
+    <li class="nav-item dropdown" @click.outside="userMenuOpen = false">
     <a class="nav-link" href="#" @click.prevent="userMenuOpen = !userMenuOpen">
         <i class="far fa-user"></i> {{ Auth::user()->name }}
             </a>
@@ -185,6 +211,7 @@
                             <li class="nav-item"><a href="{{ route('product-subcategories.index') }}" class="nav-link {{ request()->routeIs('product-subcategories.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Sub Kategori</p></a></li>
                             <li class="nav-item"><a href="{{ route('product-brands.index') }}" class="nav-link {{ request()->routeIs('product-brands.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Brand</p></a></li>
                             <li class="nav-item"><a href="{{ route('suppliers.index') }}" class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Vendor</p></a></li>
+                            <li class="nav-item"><a href="{{ route('products.low-stock') }}" class="nav-link {{ request()->routeIs('products.low-stock') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Stock Menipis</p></a></li>
                         </ul>
                     </li>
                     @endcan

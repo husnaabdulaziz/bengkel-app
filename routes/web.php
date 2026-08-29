@@ -62,11 +62,18 @@ Route::middleware(['auth', 'menu_permission:access_produk'])->group(function () 
     Route::get('products/import', [ProductImportController::class, 'showForm'])->name('products.import');
     Route::get('products/import/template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
     Route::post('products/import', [ProductImportController::class, 'import'])->name('products.import.store');
+
+    Route::get('products/low-stock', [\App\Http\Controllers\LowStockController::class, 'index'])->name('products.low-stock');
 });
 
 // ===== Pembelian =====
 Route::middleware(['auth', 'menu_permission:access_pembelian'])->group(function () {
     Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
+
+    Route::get('purchases/create-po', [PurchaseController::class, 'poBuilder'])->name('purchases.create-po');
+    Route::post('purchases/store-po', [PurchaseController::class, 'storePO'])->name('purchases.store-po');
+    Route::get('purchases/{purchase}/receive', [PurchaseController::class, 'showReceive'])->name('purchases.receive.show');
+    Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])->name('purchases.receive');
 });
 
 // ===== Stock Opname =====
