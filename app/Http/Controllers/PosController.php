@@ -95,7 +95,8 @@ class PosController extends Controller
             'manual_fee' => 'nullable',
         ]);
 
-        $workOrder = DB::transaction(function () use ($validated) {
+        try {
+            $workOrder = DB::transaction(function () use ($validated) {
             $customerId = $validated['customer_id'] ?? null;
 
             if (!$customerId) {
@@ -125,6 +126,12 @@ class PosController extends Controller
 
             foreach ($validated['items'] ?? [] as $item) {
                 $product = Product::find($item['product_id']);
+                if (!$product->is_jasa) {
+                    $currentStock = $product->stockAtBranch((int) $validated['branch_id']);
+                    if ($item['quantity'] > $currentStock) {
+                        throw new \Exception("Stock \"{$product->nama}\" tidak cukup. Tersedia: {$currentStock}, diminta: {$item['quantity']}.");
+                    }
+                }
                 $woItem = WorkOrderItem::create([
                     'work_order_id' => $workOrder->id,
                     'product_id' => $product->id,
@@ -149,6 +156,10 @@ class PosController extends Controller
 
             return $workOrder;
         });
+
+                } catch (\Exception $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('pos.queue.show', $workOrder)->with('success', 'Draft servis berhasil disimpan.');
     }
@@ -280,7 +291,14 @@ class PosController extends Controller
 
         $product = Product::find($validated['product_id']);
 
-        WorkOrderItem::create([
+            if (!$product->is_jasa) {
+                $currentStock = $product->stockAtBranch((int) $workOrder->branch_id);
+                if ($validated['quantity'] > $currentStock) {
+                    return back()->with('error', "Stock \"{$product->nama}\" tidak cukup. Tersedia: {$currentStock}, diminta: {$validated['quantity']}.");
+                }
+            }
+
+            WorkOrderItem::create([
             'work_order_id' => $workOrder->id,
             'product_id' => $product->id,
             'item_name' => $product->nama,
@@ -404,8 +422,17 @@ class PosController extends Controller
             'payments.*.amount' => 'required|numeric|min:0.01',
         ]);
 
-        DB::transaction(function () use ($validated, $workOrder) {
-            $workOrder->update([
+        foreach ($workOrder->items as $item) {
+                if ($item->product && !$item->product->is_jasa) {
+                    $currentStock = $item->product->stockAtBranch((int) $workOrder->branch_id);
+                    if ($item->quantity > $currentStock) {
+                        return back()->with('error', "Stock \"{$item->product->nama}\" tidak cukup saat ini (tersedia: {$currentStock}, dibutuhkan: {$item->quantity}). Kemungkinan stock berkurang karena transaksi lain. Sesuaikan qty atau batalkan item ini terlebih dulu.");
+                    }
+                }
+            }
+
+            DB::transaction(function () use ($validated, $workOrder) {
+                $workOrder->update([
                 'discount_type' => $validated['discount_type'] ?? null,
                 'discount_value' => $validated['discount_value'] ?? 0,
             ]);

@@ -17,7 +17,9 @@
             <div class="col-lg-3 order-2 order-lg-1">
                 @include('pos.partials.orders-sidebar')
             </div>
-
+            @if (session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
             <!-- Form Utama -->
             <div class="col-lg-9 order-1 order-lg-2">
                 <form method="POST" action="{{ route('pos.store') }}" @submit="beforeSubmit">
@@ -174,7 +176,7 @@
                                                 <input type="hidden" :name="`items[${index}][product_id]`" :value="item.product_id">
                                             </td>
                                             <td class="text-right">
-                                                <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity" min="1" class="form-control form-control-sm text-right" style="width: 70px; display: inline-block;">
+                                                <input type="number" :name="`items[${index}][quantity]`" x-model.number="item.quantity" @change="capQuantity(item)" min="1" class="form-control form-control-sm text-right" style="width: 70px; display: inline-block;">
                                             </td>
                                             <td class="text-right">
                                                 <input type="number" step="0.01" :name="`items[${index}][unit_price]`" x-model.number="item.unit_price" class="form-control form-control-sm text-right" style="width: 110px; display: inline-block;">
@@ -255,6 +257,15 @@
                     });
                     this.productResults = [];
                     this.productQuery = '';
+                },
+                capQuantity(item) {
+                    if (item.quantity < 1) {
+                        item.quantity = 1;
+                    }
+                    if (item._raw && !item._raw.is_jasa && item._raw.stock !== null && item.quantity > item._raw.stock) {
+                        alert(`Stock "${item.nama}" cuma tersisa ${item._raw.stock}. Qty otomatis disesuaikan.`);
+                        item.quantity = item._raw.stock;
+                    }
                 },
                 recalcAllPrices() {
                     this.items.forEach(item => {
