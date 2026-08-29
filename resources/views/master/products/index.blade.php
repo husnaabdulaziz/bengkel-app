@@ -99,7 +99,9 @@
                                 <td x-show="showLokasi" x-cloak x-text="p.lokasi_rak || '-'"></td>
                                 <td class="text-nowrap">
                                     <a :href="p.edit_url" class="btn btn-outline-primary" title="Edit" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-edit"></i></a>
-                                    <button type="button" @click="deleteProduct(p)" class="btn btn-outline-danger" title="Hapus" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
+                                    @can('delete_produk')
+                                        <button type="button" @click="deleteProduct(p)" class="btn btn-outline-danger" title="Hapus" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
+                                    @endcan
                                 </td>
                             </tr>
                         </template>

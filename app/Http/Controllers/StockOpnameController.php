@@ -148,4 +148,14 @@ class StockOpnameController extends Controller
 
         return $pdf->stream($stockOpname->kode_opname . '.pdf');
     }
+
+    public function destroy(\App\Models\StockOpname $stockOpname)
+    {
+        abort_unless(auth()->user()->can('delete_stock_opname'), 403, 'Anda tidak punya izin menghapus riwayat stock opname.');
+
+        $stockOpname->items()->delete();
+        $stockOpname->delete();
+
+        return redirect()->route('stock-opnames.index')->with('success', 'Riwayat stock opname berhasil dihapus.');
+    }
 }

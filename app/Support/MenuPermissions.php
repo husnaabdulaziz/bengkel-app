@@ -18,6 +18,11 @@ class MenuPermissions
         'access_pelanggan'         => 'Manajemen Pelanggan',
         'access_log_aktivitas'     => 'Log Aktivitas',
         'access_pengaturan_toko'   => 'Pengaturan Toko',
+        
+        'delete_transaksi'         => 'Hapus Riwayat Transaksi (termasuk yang sudah Selesai)',
+        'delete_produk'            => 'Hapus Produk',
+        'delete_vendor'            => 'Hapus Vendor',
+        'delete_stock_opname'      => 'Hapus Riwayat Stock Opname',
     ];
 
     /** Default permission untuk Karyawan Toko saat toko baru dibuat (Admin Toko bisa ubah nanti) */

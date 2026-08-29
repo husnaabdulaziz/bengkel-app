@@ -43,6 +43,7 @@ class SupplierController extends Controller
 
     public function destroy(Supplier $supplier)
     {
+        abort_unless(auth()->user()->can('delete_vendor'), 403, 'Anda tidak punya izin menghapus vendor.');
         $supplier->delete();
         return back()->with('success', 'Supplier berhasil dihapus.');
     }

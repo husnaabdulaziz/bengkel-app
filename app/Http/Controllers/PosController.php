@@ -216,7 +216,7 @@ class PosController extends Controller
                 'plat_nomor' => $wo->customer->plat_nomor,
                 'created_at' => $wo->created_at->format('d M Y'),
                 'show_url' => route('pos.queue.show', $wo),
-                'can_delete' => in_array($wo->stage, ['draft', 'queue']),
+                'can_delete' => in_array($wo->stage, ['draft', 'queue']) || auth()->user()->can('delete_transaksi'),
                 'delete_url' => route('pos.queue.destroy', $wo),
             ];
         });
@@ -233,8 +233,8 @@ class PosController extends Controller
     /** Hapus transaksi yang belum jadi (draft/queue). Pelanggan ikut dihapus kalau tidak dipakai transaksi lain */
     public function destroy(WorkOrder $workOrder)
     {
-        if (!in_array($workOrder->stage, ['draft', 'queue'])) {
-            return response()->json(['message' => 'Tidak bisa menghapus transaksi yang sudah selesai.'], 422);
+        if (!in_array($workOrder->stage, ['draft', 'queue']) && !auth()->user()->can('delete_transaksi')) {
+            return response()->json(['message' => 'Tidak bisa menghapus transaksi yang sudah selesai. Anda tidak punya izin.'], 422);
         }
 
         DB::transaction(function () use ($workOrder) {
@@ -249,7 +249,7 @@ class PosController extends Controller
             }
         });
 
-        return response()->json(['message' => 'Transaksi dihapus.']);
+        return response()->json(['message' => 'Transaksi dihapus. Catatan: stock yang sudah terpotong dari transaksi ini TIDAK otomatis dikembalikan — sesuaikan manual lewat Stock Opname kalau perlu.']);
     }
 
     /** Tahap 2: detail 1 work order, bisa tambah item */

@@ -31,10 +31,12 @@
                             <td>{{ $supplier->contact_person }}</td>
                             <td>{{ $supplier->telpon }}</td>
                             <td>
+                                @can('delete_vendor')
                                 <form method="POST" action="{{ route('suppliers.destroy', $supplier) }}" onsubmit="return confirm('Hapus vendor ini?')">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
                                 </form>
+                                @endcan
                             </td>
                         </tr>
                     @empty

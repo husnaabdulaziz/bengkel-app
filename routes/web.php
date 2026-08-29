@@ -23,6 +23,10 @@ use App\Http\Controllers\WarrantyController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\PermissionSettingController;
+use App\Http\Controllers\ProductImportController;
+use App\Http\Controllers\DataResetController;
+use App\Http\Middleware\EnsureSuperAdmin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -55,9 +59,9 @@ Route::middleware(['auth', 'permission:access_produk'])->group(function () {
         ->parameters(['product-subcategories' => 'subcategory'])
         ->except(['show', 'create', 'edit']);
     Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
-    Route::get('products/import', [\App\Http\Controllers\ProductImportController::class, 'showForm'])->name('products.import');
-    Route::get('products/import/template', [\App\Http\Controllers\ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
-    Route::post('products/import', [\App\Http\Controllers\ProductImportController::class, 'import'])->name('products.import.store');
+    Route::get('products/import', [ProductImportController::class, 'showForm'])->name('products.import');
+    Route::get('products/import/template', [ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
+    Route::post('products/import', [ProductImportController::class, 'import'])->name('products.import.store');
 });
 
 // ===== Pembelian =====
@@ -67,7 +71,7 @@ Route::middleware(['auth', 'permission:access_pembelian'])->group(function () {
 
 // ===== Stock =====
 Route::middleware(['auth', 'permission:access_stock'])->group(function () {
-    Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     Route::post('stock-opnames/{stockOpname}/adjust', [StockOpnameController::class, 'adjust'])->name('stock-opnames.adjust');
     Route::get('stock-opnames/{stockOpname}/pdf', [StockOpnameController::class, 'pdf'])->name('stock-opnames.pdf');
 
@@ -154,11 +158,12 @@ Route::middleware(['auth', 'permission:access_pengaturan_toko'])->group(function
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
-    Route::get('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'edit'])->name('settings.karyawan-access');
-    Route::post('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'update'])->name('settings.karyawan-access.update');
+    Route::get('settings/karyawan-access', [PermissionSettingController::class, 'edit'])->name('settings.karyawan-access');
+    Route::post('settings/karyawan-access', [PermissionSettingController::class, 'update'])->name('settings.karyawan-access.update');
 });
-// ===== Super Admin =====
-Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+
+// ===== Super Admin (pakai class middleware langsung, bukan alias string, supaya tidak kena bug alias) =====
+Route::middleware(['auth', EnsureSuperAdmin::class])->prefix('super-admin')->name('super-admin.')->group(function () {
     Route::get('system-menus', [SystemMenuController::class, 'edit'])->name('system-menus.edit');
     Route::post('system-menus', [SystemMenuController::class, 'update'])->name('system-menus.update');
 
@@ -167,8 +172,12 @@ Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-a
     Route::post('users', [SuperAdminUserController::class, 'store'])->name('users.store');
     Route::get('users/{user}/edit', [SuperAdminUserController::class, 'edit'])->name('users.edit');
     Route::put('users/{user}', [SuperAdminUserController::class, 'update'])->name('users.update');
+
+    Route::get('reset-data', [DataResetController::class, 'edit'])->name('reset-data.edit');
+    Route::post('reset-data', [DataResetController::class, 'process'])->name('reset-data.process');
+
+    Route::get('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'edit'])->name('permissions.edit');
+    Route::post('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'update'])->name('permissions.update');
 });
-
-
 
 require __DIR__.'/auth.php';

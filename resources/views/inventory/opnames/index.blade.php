@@ -38,7 +38,15 @@
                                 style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">
                                     {{ $opname->status === 'draft' ? 'Lanjutkan' : 'Lihat Detail' }}
                                 </a>
+
+                                @can('delete_stock_opname')
+                                <form method="POST" action="{{ route('stock-opnames.destroy', $opname) }}" class="d-inline" onsubmit="return confirm('Hapus riwayat opname ini? Stock yang sudah disesuaikan TIDAK ikut dikembalikan.')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                </form>
+                                @endcan
                             </td>
+                            
                         </tr>
                     @empty
                         <tr><td colspan="5" class="text-center text-muted py-4">Belum ada opname.</td></tr>

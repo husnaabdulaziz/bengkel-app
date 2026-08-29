@@ -132,6 +132,7 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        abort_unless(auth()->user()->can('delete_produk'), 403, 'Anda tidak punya izin menghapus produk.');
         $product->delete();
         return back()->with('success', 'Produk berhasil dihapus.');
     }

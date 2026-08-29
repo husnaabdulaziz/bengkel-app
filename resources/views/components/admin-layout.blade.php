@@ -334,6 +334,18 @@
                                 <p>Kelola Menu Sistem</p>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('super-admin.permissions.edit') }}" class="nav-link {{ request()->routeIs('super-admin.permissions.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-user-shield"></i>
+                                <p>Kelola Hak Akses</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('super-admin.reset-data.edit') }}" class="nav-link {{ request()->routeIs('super-admin.reset-data.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-trash-restore"></i>
+                                <p>Reset Data</p>
+                            </a>
+                        </li>
                         @endif
                 </ul>
             </nav>
