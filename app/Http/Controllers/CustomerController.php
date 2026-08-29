@@ -12,7 +12,7 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::query();
+        $query = Customer::where('branch_id', $this->activeBranchId());
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -51,7 +51,7 @@ class CustomerController extends Controller
 
     public function export(Request $request)
     {
-        $query = Customer::query();
+        $query = Customer::where('branch_id', $this->activeBranchId());
 
         if ($request->filled('search')) {
             $search = $request->search;

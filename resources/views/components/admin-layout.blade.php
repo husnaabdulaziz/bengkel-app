@@ -148,15 +148,27 @@
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
     <ul class="navbar-nav align-items-center">
-        <li class="nav-item">
-            <a class="nav-link" href="#" role="button" onclick="event.preventDefault(); if (window.innerWidth < 992) { document.body.classList.toggle('sidebar-open'); } else { document.body.classList.toggle('sidebar-collapse'); } event.stopPropagation();"><i class="fas fa-bars"></i></a>
-        </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#" role="button" onclick="event.preventDefault(); if (window.innerWidth < 992) { document.body.classList.toggle('sidebar-open'); } else { document.body.classList.toggle('sidebar-collapse'); } event.stopPropagation();"><i class="fas fa-bars"></i></a>
+    </li>
+    @if (auth()->user()->company_id && auth()->user()->branches->count() > 1)
         <li class="nav-item ml-2">
-            <a href="{{ route('pos.create') }}" class="btn btn-warning btn-sm text-dark font-weight-bold">
-                <i class="fas fa-plus"></i> Tambah Transaksi
-            </a>
+            <form method="POST" action="{{ route('switch-branch') }}">
+                @csrf
+                <select name="branch_id" onchange="this.form.submit()" class="form-control form-control-sm">
+                    @foreach (auth()->user()->branches->where('is_active', true) as $branch)
+                        <option value="{{ $branch->id }}" @selected(session('active_branch_id') == $branch->id)>{{ $branch->nama_cabang }}</option>
+                    @endforeach
+                </select>
+            </form>
         </li>
-    </ul>
+    @endif
+    <li class="nav-item ml-2">
+        <a href="{{ route('pos.create') }}" class="btn btn-warning btn-sm text-dark font-weight-bold">
+            <i class="fas fa-plus"></i> Tambah Transaksi
+        </a>
+    </li>
+</ul>
         <ul class="navbar-nav ml-auto">
     @if (auth()->user()->company_id)
         @php $lowStockItems = \App\Http\Controllers\LowStockController::getLowStockItems(); @endphp
@@ -411,6 +423,12 @@
                             </a>
                         </li>
                     @endif
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.companies.index') }}" class="nav-link {{ request()->routeIs('super-admin.companies.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>Kelola Toko</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('super-admin.announcements.index') }}" class="nav-link {{ request()->routeIs('super-admin.announcements.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-bullhorn"></i>

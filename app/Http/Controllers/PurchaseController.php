@@ -15,7 +15,9 @@ class PurchaseController extends Controller
 {
     public function index()
     {
-        $purchases = Purchase::with(['supplier', 'branch'])->latest()->paginate(20);
+        $purchases = Purchase::with(['supplier', 'branch'])
+            ->where('branch_id', $this->activeBranchId())
+            ->latest()->paginate(20);
         return view('inventory.purchases.index', compact('purchases'));
     }
 

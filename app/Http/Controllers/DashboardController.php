@@ -26,6 +26,7 @@ class DashboardController extends Controller
 
     private function calculate(Request $request): array
     {
+        $branchId = $this->activeBranchId();
         $period = $request->get('period', 'harian');
 
         if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
@@ -40,12 +41,13 @@ class DashboardController extends Controller
         }
 
         $completedOrders = WorkOrder::where('stage', 'completed')
+            ->where('branch_id', $branchId)
             ->whereBetween('paid_at', [$start, $end]);
 
         $totalPenjualan = (clone $completedOrders)->sum('total_amount');
 
-        $laborCost = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end) {
-                $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+        $laborCost = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end, $branchId) {
+                $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
             })
             ->with('product:id,harga_modal')
             ->get()
@@ -54,8 +56,8 @@ class DashboardController extends Controller
                 return $item->subtotal - ($modal * $item->quantity);
             });
 
-        $feeOtomatis = \App\Models\WorkOrderItemTechnician::whereHas('item.workOrder', function ($q) use ($start, $end) {
-                $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+        $feeOtomatis = \App\Models\WorkOrderItemTechnician::whereHas('item.workOrder', function ($q) use ($start, $end, $branchId) {
+                $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
             })->sum('fee_amount');
 
         $feeManual = \App\Models\TechnicianManualFee::whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()])
@@ -63,11 +65,12 @@ class DashboardController extends Controller
 
         $totalPelanggan = (clone $completedOrders)->count();
 
-        $totalPengeluaran = Expense::whereBetween('expense_date', [$start, $end])->sum('amount');
+        $totalPengeluaran = Expense::whereBetween('expense_date', [$start, $end])->where('branch_id', $branchId)->sum('amount');
 
         $totalLaba = $laborCost - $feeOtomatis - $feeManual - $totalPengeluaran;
 
         $chartRaw = WorkOrder::where('stage', 'completed')
+            ->where('branch_id', $branchId)
             ->whereBetween('paid_at', [$start, $end])
             ->selectRaw('DATE(paid_at) as tanggal, SUM(total_amount) as total')
             ->groupBy('tanggal')

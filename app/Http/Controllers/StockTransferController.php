@@ -14,7 +14,12 @@ class StockTransferController extends Controller
 {
     public function index()
     {
-        $transfers = StockTransfer::with(['fromBranch', 'toBranch'])->latest('requested_at')->paginate(20);
+        $branchId = $this->activeBranchId();
+        $transfers = StockTransfer::with(['fromBranch', 'toBranch'])
+            ->where(function ($q) use ($branchId) {
+                $q->where('from_branch_id', $branchId)->orWhere('to_branch_id', $branchId);
+            })
+            ->latest()->paginate(20);
         return view('inventory.transfers.index', compact('transfers'));
     }
 

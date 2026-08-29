@@ -17,7 +17,9 @@ class StockOpnameController extends Controller
 {
     public function index()
     {
-        $opnames = StockOpname::with('branch')->latest()->paginate(20);
+        $opnames = StockOpname::with('branch')
+        ->where('branch_id', $this->activeBranchId())
+        ->latest()->paginate(20);
         return view('inventory.opnames.index', compact('opnames'));
     }
 

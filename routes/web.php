@@ -172,6 +172,9 @@ Route::middleware(['auth', 'menu_permission:access_pengaturan_toko'])->group(fun
 
     Route::get('settings/karyawan-access', [PermissionSettingController::class, 'edit'])->name('settings.karyawan-access');
     Route::post('settings/karyawan-access', [PermissionSettingController::class, 'update'])->name('settings.karyawan-access.update');
+    Route::resource('branches', \App\Http\Controllers\BranchController::class)->except(['show']);
+    Route::post('branches/{branch}/toggle-active', [\App\Http\Controllers\BranchController::class, 'toggleActive'])->name('branches.toggle-active');
+    Route::get('branches/{branch}/confirm-delete', [\App\Http\Controllers\BranchController::class, 'confirmDelete'])->name('branches.confirm-delete');
 });
 
 // ===== Super Admin (pakai class middleware langsung, bukan alias string, supaya tidak kena bug alias) =====
@@ -194,6 +197,7 @@ Route::middleware(['auth', EnsureSuperAdmin::class])->prefix('super-admin')->nam
     Route::get('backup', [\App\Http\Controllers\SuperAdminBackupController::class, 'index'])->name('backup.index');
     Route::get('backup/download', [\App\Http\Controllers\SuperAdminBackupController::class, 'download'])->name('backup.download');
     Route::resource('announcements', \App\Http\Controllers\SuperAdminAnnouncementController::class)->except(['show']);
+    Route::resource('companies', \App\Http\Controllers\SuperAdminCompanyController::class)->except(['show', 'destroy']);
 });
 
 Route::middleware(['auth', \App\Http\Middleware\EnsureSuperAdmin::class])->group(function () {
@@ -203,5 +207,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureSuperAdmin::class])->group
     
     
 });
+
+Route::post('switch-branch', function (\Illuminate\Http\Request $request) {
+    $request->validate(['branch_id' => 'required|exists:branches,id']);
+    session(['active_branch_id' => $request->branch_id]);
+    return back()->with('success', 'Cabang aktif berhasil diubah.');
+})->middleware('auth')->name('switch-branch');
 
 require __DIR__.'/auth.php';

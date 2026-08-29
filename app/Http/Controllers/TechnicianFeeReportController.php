@@ -114,64 +114,66 @@ class TechnicianFeeReportController extends Controller
 
     /** Ambil SEMUA data sesuai filter (tanpa dipotong halaman) - dipakai baik untuk web (lalu dipaginasi) maupun PDF (full) */
     private function getReportData(Request $request): array
-{
-    $period = $request->get('period', 'harian');
-    $technicianId = $request->get('technician_id');
+    {
+        $period = $request->get('period', 'harian');
+        $technicianId = $request->get('technician_id');
 
-    if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
-        $start = Carbon::parse($request->get('start_date'))->startOfDay();
-        $end = Carbon::parse($request->get('end_date'))->endOfDay();
-    } else {
-        [$start, $end] = match ($period) {
-            'bulanan' => [now()->startOfMonth(), now()->endOfMonth()],
-            'tahunan' => [now()->startOfYear(), now()->endOfYear()],
-            default   => [now()->startOfDay(), now()->endOfDay()],
-        };
-    }
+        if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
+            $start = Carbon::parse($request->get('start_date'))->startOfDay();
+            $end = Carbon::parse($request->get('end_date'))->endOfDay();
+        } else {
+            [$start, $end] = match ($period) {
+                'bulanan' => [now()->startOfMonth(), now()->endOfMonth()],
+                'tahunan' => [now()->startOfYear(), now()->endOfYear()],
+                default   => [now()->startOfDay(), now()->endOfDay()],
+            };
+        }
 
-        $autoQuery = WorkOrderItemTechnician::with(['technician', 'item.product', 'item.workOrder'])
-            ->whereHas('item.workOrder', function ($q) use ($start, $end) {
-                $q->where('stage', 'completed')->whereBetween('paid_at', [$start, $end]);
+            $branchId = $this->activeBranchId();
+
+            $autoQuery = WorkOrderItemTechnician::with(['technician', 'item.product', 'item.workOrder'])
+                ->whereHas('item.workOrder', function ($q) use ($start, $end, $branchId) {
+                    $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
+                });
+
+            if ($technicianId) {
+                $autoQuery->where('user_id', $technicianId);
+            }
+
+            $autoFees = $autoQuery->get()->map(function ($row) {
+                return (object) [
+                    'id' => $row->id,
+                    'technician' => $row->technician,
+                    'product_name' => $row->item->item_name,
+                    'notes' => $row->fee_notes,
+                    'fee_amount' => $row->fee_amount,
+                    'source' => 'otomatis',
+                    'is_manual_case' => (bool) $row->item->manual_fee,
+                ];
             });
 
-        if ($technicianId) {
-            $autoQuery->where('user_id', $technicianId);
+            $manualQuery = TechnicianManualFee::with(['technician', 'product'])
+                ->whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()]);
+
+            if ($technicianId) {
+                $manualQuery->where('user_id', $technicianId);
+            }
+
+            $manualFees = $manualQuery->get()->map(function ($row) {
+                return (object) [
+                    'id' => $row->id,
+                    'technician' => $row->technician,
+                    'product_name' => $row->product?->nama ?? '-',
+                    'notes' => $row->notes,
+                    'fee_amount' => $row->fee_amount,
+                    'source' => 'manual',
+                    'is_manual_case' => true,
+                ];
+            });
+
+            $data = new Collection([...$autoFees, ...$manualFees]);
+            $totalFee = $data->sum('fee_amount');
+
+            return [$data, $start, $end, $period, $technicianId, $totalFee];
         }
-
-        $autoFees = $autoQuery->get()->map(function ($row) {
-            return (object) [
-                'id' => $row->id,
-                'technician' => $row->technician,
-                'product_name' => $row->item->item_name,
-                'notes' => $row->fee_notes,
-                'fee_amount' => $row->fee_amount,
-                'source' => 'otomatis',
-                'is_manual_case' => (bool) $row->item->manual_fee,
-            ];
-        });
-
-        $manualQuery = TechnicianManualFee::with(['technician', 'product'])
-            ->whereBetween('transaction_date', [$start->toDateString(), $end->toDateString()]);
-
-        if ($technicianId) {
-            $manualQuery->where('user_id', $technicianId);
-        }
-
-        $manualFees = $manualQuery->get()->map(function ($row) {
-            return (object) [
-                'id' => $row->id,
-                'technician' => $row->technician,
-                'product_name' => $row->product?->nama ?? '-',
-                'notes' => $row->notes,
-                'fee_amount' => $row->fee_amount,
-                'source' => 'manual',
-                'is_manual_case' => true,
-            ];
-        });
-
-        $data = new Collection([...$autoFees, ...$manualFees]);
-        $totalFee = $data->sum('fee_amount');
-
-        return [$data, $start, $end, $period, $technicianId, $totalFee];
-    }
 }

@@ -66,7 +66,7 @@ class ProductController extends Controller
                     'harga_jual_jasa' => number_format($p->harga_jual_jasa, 0, ',', '.'),
                     'harga_online' => number_format($p->harga_online, 0, ',', '.'),
                     'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
-                    'stock_total' => $p->is_jasa ? null : $p->branchStocks()->sum('stock_qty'),
+                    'stock_total' => $p->is_jasa ? null : $p->branchStocks()->where('branch_id', $this->activeBranchId())->sum('stock_qty'),
                     'lokasi_rak' => $p->lokasi_rak,
                     'status' => $p->status,
                     'edit_url' => route('products.edit', $p),

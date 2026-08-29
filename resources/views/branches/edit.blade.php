@@ -1,0 +1,34 @@
+<x-admin-layout title="Edit Cabang">
+    <div style="max-width: 600px;" class="mx-auto">
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('branches.update', $branch) }}" class="card">
+            @csrf @method('PUT')
+            <div class="card-body">
+                <div class="form-group">
+                    <label>Nama Cabang</label>
+                    <input type="text" name="nama_cabang" value="{{ old('nama_cabang', $branch->nama_cabang) }}" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Alamat</label>
+                    <textarea name="alamat" rows="2" class="form-control">{{ old('alamat', $branch->alamat) }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Telpon</label>
+                    <input type="text" name="telpon" value="{{ old('telpon', $branch->telpon) }}" class="form-control">
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</x-admin-layout>

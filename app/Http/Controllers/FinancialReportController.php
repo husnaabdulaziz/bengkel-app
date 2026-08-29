@@ -130,7 +130,7 @@ class FinancialReportController extends Controller
     public function salesDetailExcel(Request $request)
     {
         $period = $request->get('period', 'harian');
-        $branchId = $request->get('branch_id');
+        $branchId = $request->get('branch_id', $this->activeBranchId());
 
         if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
             $start = Carbon::parse($request->get('start_date'))->startOfDay();
@@ -223,7 +223,7 @@ class FinancialReportController extends Controller
     private function calculate(Request $request): array
     {
         $period = $request->get('period', 'harian');
-        $branchId = $request->get('branch_id');
+        $branchId = $request->get('branch_id', $this->activeBranchId());
 
         if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
             $start = Carbon::parse($request->get('start_date'))->startOfDay();

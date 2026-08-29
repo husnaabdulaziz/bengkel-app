@@ -13,7 +13,7 @@ class CashClosingController extends Controller
     /** Halaman kerja hari ini (buka kas / lihat status / tutup kas) */
     public function today(Request $request)
     {
-        $branchId = $request->get('branch_id') ?? auth()->user()->branches()->value('branches.id');
+        $branchId = $request->get('branch_id', $this->activeBranchId());
         $branches = auth()->user()->isSuperAdmin() ? Branch::all() : auth()->user()->branches;
 
         $closing = CashClosing::where('branch_id', $branchId)

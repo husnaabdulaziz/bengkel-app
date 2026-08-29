@@ -97,6 +97,9 @@
         </form>
         <div class="text-center mt-3">
             <a href="{{ route('settings.karyawan-access') }}" class="text-muted"><i class="fas fa-users-cog"></i> Atur Hak Akses Karyawan Toko</a>
+            <a href="{{ route('branches.index') }}" class="text-muted"><i class="fas fa-store"></i> Kelola Cabang</a>
+        
+            
         </div>
     </div>
 </x-admin-layout>
