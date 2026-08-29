@@ -207,6 +207,7 @@
                         </a>
                         <ul class="nav nav-treeview">
                             <li class="nav-item"><a href="{{ route('products.index') }}" class="nav-link {{ request()->routeIs('products.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>List Produk</p></a></li>
+                            <li class="nav-item"><a href="{{ route('products.stickers') }}" class="nav-link {{ request()->routeIs('products.stickers') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Cetak Sticker</p></a></li>
                             <li class="nav-item"><a href="{{ route('product-categories.index') }}" class="nav-link {{ request()->routeIs('product-categories.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Kategori</p></a></li>
                             <li class="nav-item"><a href="{{ route('product-subcategories.index') }}" class="nav-link {{ request()->routeIs('product-subcategories.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Sub Kategori</p></a></li>
                             <li class="nav-item"><a href="{{ route('product-brands.index') }}" class="nav-link {{ request()->routeIs('product-brands.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Brand</p></a></li>

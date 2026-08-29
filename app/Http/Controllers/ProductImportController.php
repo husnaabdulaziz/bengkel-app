@@ -19,11 +19,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class ProductImportController extends Controller
 {
     private array $headers = [
-        'Nama Produk', 'SKU', 'Kategori', 'Sub Kategori', 'Brand', 'Vendor', 'Satuan', 'Lokasi Rak',
-        'Harga Modal', 'Harga Jual', 'Harga Jual Bawa', 'Harga Online', 'Harga Ojol',
-        'Harga Pasang (Fee Mekanik)',
-        'Garansi Aktif (Ya/Tidak)', 'Durasi Garansi (hari)',
-        'Stock Awal', 'Minimum Stock',
+    'Nama Produk', 'Ukuran', 'Nama Model', 'SKU', 'Kategori', 'Sub Kategori', 'Brand', 'Vendor', 'Satuan', 'Lokasi Rak',
+    'Harga Modal', 'Harga Jual', 'Harga Jual Bawa', 'Harga Online', 'Harga Ojol',
+    'Harga Pasang (Fee Mekanik)',
+    'Garansi Aktif (Ya/Tidak)', 'Durasi Garansi (hari)',
+    'Stock Awal', 'Minimum Stock',
     ];
 
     public function showForm()
@@ -38,17 +38,17 @@ class ProductImportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Import Produk');
         $sheet->fromArray($this->headers, null, 'A1');
-        $sheet->getStyle('A1:R1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:T1')->getFont()->setBold(true);
 
         $sheet->fromArray([
-            'Oli Shell Helix 1L', 'OLI-001', 'Oli', 'Oli Mesin', 'Shell', 'PT Sumber Jaya', 'pcs', 'Rak 1.A',
-            35000, 45000, 55000, 44000, 42000,
+            'Swallow Razor TL Ring 12', '100/90', 'Swallow Razor TL Ring 12', 'BAN-001', 'Ban', 'Ring 12', 'Swallow', 'PT Sumber Jaya', 'pcs', 'Rak Ban A',
+            280000, 338000, 348000, 335000, 330000,
             5000,
             'Tidak', 0,
-            20, 5,
+            10, 3,
         ], null, 'A2');
 
-        foreach (range('A', 'R') as $col) {
+        foreach (range('A', 'T') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -87,12 +87,12 @@ class ProductImportController extends Controller
             try {
                 DB::transaction(function () use ($row, $validated) {
                     [
-                        $nama, $sku, $kategoriNama, $subkategoriNama, $brandNama, $vendorNama, $satuan, $lokasiRak,
+                        $nama, $ukuran, $modelName, $sku, $kategoriNama, $subkategoriNama, $brandNama, $vendorNama, $satuan, $lokasiRak,
                         $hargaModal, $hargaJual, $hargaJualBawa, $hargaOnline, $hargaOjol,
                         $hargaPasang,
                         $garansiAktifRaw, $garansiDurasi,
                         $stockAwal, $minimumStock,
-                    ] = array_pad($row, 18, null);
+                    ] = array_pad($row, 20, null);
 
                     if (empty($nama)) {
                         throw new \Exception('Nama Produk kosong.');
@@ -136,6 +136,8 @@ class ProductImportController extends Controller
                     if ($vendor) $updateData['default_supplier_id'] = $vendor->id;
                     if ($isFilled($satuan)) $updateData['satuan'] = $satuan;
                     if ($isFilled($lokasiRak)) $updateData['lokasi_rak'] = $lokasiRak;
+                    if ($isFilled($ukuran)) $updateData['ukuran'] = $ukuran;
+                    if ($isFilled($modelName)) $updateData['model_name'] = $modelName;
                     if ($isFilled($hargaModal)) $updateData['harga_modal'] = (float) $hargaModal;
                     if ($isFilled($hargaJual)) $updateData['harga_jual'] = (float) $hargaJual;
                     if ($isFilled($hargaJualBawa)) $updateData['harga_jual_jasa'] = (float) $hargaJualBawa;

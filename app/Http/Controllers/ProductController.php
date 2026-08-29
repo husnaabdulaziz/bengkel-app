@@ -56,6 +56,8 @@ class ProductController extends Controller
                 return [
                     'id' => $p->id,
                     'nama' => $p->nama,
+                    'ukuran' => $p->ukuran,
+                    'model_name' => $p->model_name,
                     'is_jasa' => $p->is_jasa,
                     'category' => $p->category?->nama,
                     'subcategory' => $p->subcategory?->nama,
@@ -157,6 +159,8 @@ class ProductController extends Controller
             'default_supplier_id' => 'nullable|exists:suppliers,id',
             'sku' => 'nullable|string|max:60',
             'nama' => 'required|string|max:180',
+            'ukuran' => 'nullable|string|max:50',
+            'model_name' => 'nullable|string|max:150',
             'satuan' => 'required|string|max:30',
             'is_jasa' => 'boolean',
             'harga_modal' => 'required|numeric|min:0',

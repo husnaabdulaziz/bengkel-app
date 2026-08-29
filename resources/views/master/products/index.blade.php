@@ -32,7 +32,9 @@
                         </select>
                     </div>
                     <a href="{{ route('products.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Produk</a>
+                    <a href="{{ route('products.stickers') }}" class="btn btn-outline-secondary"><i class="fas fa-tags"></i> Cetak Sticker</a>
                     <a href="{{ route('products.import') }}" class="btn btn-success"><i class="fas fa-file-import"></i> Import Excel</a>
+                    
                 </div>
 
                 <div>
@@ -40,7 +42,8 @@
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showJualJasa" class="mr-1"> Harga Bawa</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showOnline" class="mr-1"> Harga Online</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showOjol" class="mr-1"> Harga Ojol</label>
-                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showLokasi" class="mr-1"> Lokasi Rak</label>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showLokasi" class="mr-1"> Lokasi Rak</label>
+                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showModel" class="mr-1"> Ukuran & Model</label>
                 </div>
             </div>
         </div>
@@ -50,7 +53,9 @@
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Nama</th>
+                            <th>Nama</th>                            
+                            <th x-show="showModel" x-cloak>Ukuran</th>
+                            <th x-show="showModel" x-cloak>Model</th>
                             <th class="d-none d-md-table-cell">Kategori</th>
                             <th class="d-none d-md-table-cell">Brand</th>
                             <th class="text-right">Stock</th>
@@ -82,6 +87,9 @@
                                         Brand: <span x-text="p.brand || '-'"></span>
                                     </div>
                                 </td>
+                                
+                                <td x-show="showModel" x-cloak x-text="p.ukuran || '-'"></td>
+                                <td x-show="showModel" x-cloak x-text="p.model_name || '-'"></td>
                                 <td class="d-none d-md-table-cell" x-text="p.category || '-'"></td>
                                 <td class="d-none d-md-table-cell" x-text="p.brand || '-'"></td>
                                 <td class="text-right">
@@ -135,7 +143,7 @@
         function productList() {
             return {
                 search: '', categoryId: '', brandId: '', perPage: 10, page: 1,
-                showJualJasa: false, showOnline: false, showOjol: false, showLokasi: false,
+                showJualJasa: false, showOnline: false, showOjol: false, showLokasi: false, showModel: false,
                 items: [], lastPage: 1, totalItems: 0, loading: false,
                 expanded: {},
 

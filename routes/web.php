@@ -64,6 +64,8 @@ Route::middleware(['auth', 'menu_permission:access_produk'])->group(function () 
     Route::post('products/import', [ProductImportController::class, 'import'])->name('products.import.store');
 
     Route::get('products/low-stock', [\App\Http\Controllers\LowStockController::class, 'index'])->name('products.low-stock');
+
+    Route::get('products/stickers', [\App\Http\Controllers\ProductStickerController::class, 'index'])->name('products.stickers');
 });
 
 // ===== Pembelian =====

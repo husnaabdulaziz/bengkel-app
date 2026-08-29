@@ -28,6 +28,15 @@
             <label>Nama Produk</label>
             <input type="text" name="nama" value="{{ old('nama', $p?->nama) }}" required class="form-control">
         </div>
+        
+        <div class="col-md-6 form-group">
+            <label>Ukuran (opsional, mis. 100/90)</label>
+            <input type="text" name="ukuran" value="{{ old('ukuran', $p?->ukuran) }}" class="form-control">
+        </div>
+        <div class="col-md-6 form-group">
+            <label>Nama Model (opsional, untuk sticker rak — mis. "Swallow Razor TL Ring 12")</label>
+            <input type="text" name="model_name" value="{{ old('model_name', $p?->model_name) }}" class="form-control">
+        </div>
         <div class="col-md-6 form-group">
             <label>SKU</label>
             <input type="text" name="sku" value="{{ old('sku', $p?->sku) }}" class="form-control">
