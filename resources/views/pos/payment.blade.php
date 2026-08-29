@@ -2,18 +2,28 @@
 
     <div class="flex-1 min-w-0 max-w-2xl"
         x-data="{
-            discountType: '',
-            discountValue: 0,
-            subtotal: {{ $workOrder->items->sum('subtotal') }},
-            payments: [{ method: 'tunai', amount: {{ $workOrder->items->sum('subtotal') }} }],
-            get discountAmount() {
-                if (!this.discountType || !this.discountValue) return 0;
-                return this.discountType === 'percent' ? this.subtotal * (this.discountValue / 100) : parseFloat(this.discountValue);
-            },
-            get total() { return Math.max(this.subtotal - this.discountAmount, 0); },
-            get paymentsSum() { return this.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0); },
-            get remaining() { return Math.round((this.total - this.paymentsSum) * 100) / 100; }
-        }">
+                discountType: '',
+                discountValue: 0,
+                subtotal: {{ $workOrder->items->sum('subtotal') }},
+                checked: { tunai: true, transfer: false, debit: false },
+                amounts: { tunai: {{ $workOrder->items->sum('subtotal') }}, transfer: 0, debit: 0 },
+                get discountAmount() {
+                    if (!this.discountType || !this.discountValue) return 0;
+                    return this.discountType === 'percent' ? this.subtotal * (this.discountValue / 100) : parseFloat(this.discountValue);
+                },
+                get total() { return Math.max(this.subtotal - this.discountAmount, 0); },
+                get paymentsSum() {
+                    return Object.keys(this.checked).filter(m => this.checked[m]).reduce((sum, m) => sum + (parseFloat(this.amounts[m]) || 0), 0);
+                },
+                get remaining() { return Math.round((this.total - this.paymentsSum) * 100) / 100; },
+                onToggleMethod(method) {
+                    if (this.checked[method]) {
+                        if (!this.amounts[method]) { this.amounts[method] = Math.max(this.remaining, 0); }
+                    } else {
+                        this.amounts[method] = 0;
+                    }
+                }
+            }">
         <div class="row">
             <div class="col-lg-3 order-2 order-lg-1">
                 @include('pos.partials.orders-sidebar')
@@ -70,24 +80,20 @@
 
                         <div class="form-group">
                             <label>Metode Pembayaran</label>
-                            <template x-for="(pay, index) in payments" :key="index">
-                                <div class="form-row align-items-center mb-2">
-                                    <div class="col-5">
-                                        <select :name="`payments[${index}][method]`" x-model="pay.method" required class="form-control form-control-sm">
-                                            <option value="tunai">Tunai</option>
-                                            <option value="transfer">Transfer</option>
-                                            <option value="debit">Debit</option>
-                                        </select>
+
+                            <template x-for="method in ['tunai', 'transfer', 'debit']" :key="method">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="custom-control custom-checkbox mr-3" style="width: 110px;">
+                                        <input type="checkbox" class="custom-control-input" :id="'chk-' + method"
+                                            x-model="checked[method]" @change="onToggleMethod(method)">
+                                        <label class="custom-control-label text-capitalize" :for="'chk-' + method" x-text="method"></label>
                                     </div>
-                                    <div class="col-5">
-                                        <input type="number" step="0.01" :name="`payments[${index}][amount]`" x-model.number="pay.amount" min="0" required class="form-control form-control-sm" placeholder="Nominal">
-                                    </div>
-                                    <div class="col-2">
-                                        <button type="button" @click="payments.splice(index, 1)" x-show="payments.length > 1" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
-                                    </div>
+                                    <input type="hidden" :name="`payments[${method}][method]`" :value="method" :disabled="!checked[method]">
+                                    <input type="number" step="0.01" :name="`payments[${method}][amount]`" x-model.number="amounts[method]"
+                                        :disabled="!checked[method]" x-show="checked[method]" x-cloak
+                                        min="0" class="form-control form-control-sm" style="max-width: 200px;" placeholder="Nominal">
                                 </div>
                             </template>
-                            <button type="button" @click="payments.push({ method: 'tunai', amount: 0 })" class="btn btn-sm btn-outline-secondary">+ Tambah Metode Bayar</button>
 
                             <div class="mt-2 small">
                                 <span>Total Dibayar: Rp <span x-text="paymentsSum.toLocaleString('id-ID')"></span></span>
