@@ -15,7 +15,7 @@ class Product extends Model
         'company_id', 'category_id', 'brand_id', 'default_supplier_id',
         'sku', 'nama', 'satuan', 'is_jasa',
         'harga_modal', 'harga_jual', 'harga_jual_jasa', 'harga_online', 'harga_ojol',
-        'garansi_aktif', 'garansi_durasi_hari', 'minimum_stock', 'status',
+        'garansi_aktif', 'garansi_durasi_hari', 'minimum_stock','lokasi_rak', 'status',
     ];
 
     protected function casts(): array

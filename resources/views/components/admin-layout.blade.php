@@ -317,6 +317,21 @@
                         </a>
                     </li>
                     @endcan
+                    @if (auth()->user()->is_super_admin)
+                        <li class="nav-header">SUPER ADMIN</li>
+                        <li class="nav-item">
+                            <a href="{{ route('super-admin.users.index') }}" class="nav-link {{ request()->routeIs('super-admin.users.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-users-cog"></i>
+                                <p>Kelola User</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('super-admin.system-menus.edit') }}" class="nav-link {{ request()->routeIs('super-admin.system-menus.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-toggle-on"></i>
+                                <p>Kelola Menu Sistem</p>
+                            </a>
+                        </li>
+                        @endif
                 </ul>
             </nav>
         </div>

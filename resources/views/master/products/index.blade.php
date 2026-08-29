@@ -32,13 +32,15 @@
                         </select>
                     </div>
                     <a href="{{ route('products.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Produk</a>
+                    <a href="{{ route('products.import') }}" class="btn btn-success"><i class="fas fa-file-import"></i> Import Excel</a>
                 </div>
 
                 <div>
                     <span class="text-muted small mr-3">Tampilkan kolom tambahan:</span>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showJualJasa" class="mr-1"> Harga Bawa</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showOnline" class="mr-1"> Harga Online</label>
-                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showOjol" class="mr-1"> Harga Ojol</label>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showOjol" class="mr-1"> Harga Ojol</label>
+                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showLokasi" class="mr-1"> Lokasi Rak</label>
                 </div>
             </div>
         </div>
@@ -56,6 +58,7 @@
                             <th class="text-right" x-show="showJualJasa" x-cloak>Harga Bawa</th>
                             <th class="text-right" x-show="showOnline" x-cloak>Online</th>
                             <th class="text-right" x-show="showOjol" x-cloak>Ojol</th>
+                            <th x-show="showLokasi" x-cloak>Lokasi</th>
                             <th style="width: 70px;">Aksi</th>
                         </tr>
                     </thead>
@@ -93,6 +96,7 @@
                                 <td class="text-right" x-show="showJualJasa" x-cloak x-text="p.harga_jual_jasa"></td>
                                 <td class="text-right" x-show="showOnline" x-cloak x-text="p.harga_online"></td>
                                 <td class="text-right" x-show="showOjol" x-cloak x-text="p.harga_ojol"></td>
+                                <td x-show="showLokasi" x-cloak x-text="p.lokasi_rak || '-'"></td>
                                 <td class="text-nowrap">
                                     <a :href="p.edit_url" class="btn btn-outline-primary" title="Edit" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-edit"></i></a>
                                     <button type="button" @click="deleteProduct(p)" class="btn btn-outline-danger" title="Hapus" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
@@ -129,7 +133,7 @@
         function productList() {
             return {
                 search: '', categoryId: '', brandId: '', perPage: 10, page: 1,
-                showJualJasa: false, showOnline: false, showOjol: false,
+                showJualJasa: false, showOnline: false, showOjol: false, showLokasi: false,
                 items: [], lastPage: 1, totalItems: 0, loading: false,
                 expanded: {},
 

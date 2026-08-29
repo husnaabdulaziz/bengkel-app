@@ -50,7 +50,7 @@ class ProductController extends Controller
         }
 
         $perPage = in_array((int) $request->get('per_page'), [10, 25, 50, 100]) ? (int) $request->get('per_page') : 10;
-$products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
+        $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
 
         $items = $products->getCollection()->map(function ($p) {
                 return [
@@ -65,6 +65,7 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
                     'harga_online' => number_format($p->harga_online, 0, ',', '.'),
                     'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
                     'stock_total' => $p->is_jasa ? null : $p->branchStocks()->sum('stock_qty'),
+                    'lokasi_rak' => $p->lokasi_rak,
                     'edit_url' => route('products.edit', $p),
                     'delete_url' => route('products.destroy', $p),
                 ];
@@ -164,7 +165,9 @@ $products = $query->orderBy('nama')->paginate($perPage)->withQueryString();
             'harga_ojol' => 'required|numeric|min:0',
             'garansi_aktif' => 'boolean',
             'garansi_durasi_hari' => 'nullable|integer|min:1',
+            'lokasi_rak' => 'nullable|string|max:50',
             'minimum_stock' => 'required|integer|min:0',
+            
         ]);
     }
 }

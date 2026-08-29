@@ -13,6 +13,7 @@ class EnsureSuperAdmin
         if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
             abort(403);
         }
+
         return $next($request);
     }
 }

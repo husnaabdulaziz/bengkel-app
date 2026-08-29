@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\SystemMenuController;
+use App\Http\Controllers\SuperAdminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductCategoryController;
@@ -53,6 +55,9 @@ Route::middleware(['auth', 'permission:access_produk'])->group(function () {
         ->parameters(['product-subcategories' => 'subcategory'])
         ->except(['show', 'create', 'edit']);
     Route::post('product-subcategories/quick', [ProductSubcategoryController::class, 'quickStore'])->name('product-subcategories.quick');
+    Route::get('products/import', [\App\Http\Controllers\ProductImportController::class, 'showForm'])->name('products.import');
+    Route::get('products/import/template', [\App\Http\Controllers\ProductImportController::class, 'downloadTemplate'])->name('products.import.template');
+    Route::post('products/import', [\App\Http\Controllers\ProductImportController::class, 'import'])->name('products.import.store');
 });
 
 // ===== Pembelian =====
@@ -151,6 +156,17 @@ Route::middleware(['auth', 'permission:access_pengaturan_toko'])->group(function
 
     Route::get('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'edit'])->name('settings.karyawan-access');
     Route::post('settings/karyawan-access', [\App\Http\Controllers\PermissionSettingController::class, 'update'])->name('settings.karyawan-access.update');
+});
+// ===== Super Admin =====
+Route::middleware(['auth', 'super_admin'])->prefix('super-admin')->name('super-admin.')->group(function () {
+    Route::get('system-menus', [SystemMenuController::class, 'edit'])->name('system-menus.edit');
+    Route::post('system-menus', [SystemMenuController::class, 'update'])->name('system-menus.update');
+
+    Route::get('users', [SuperAdminUserController::class, 'index'])->name('users.index');
+    Route::get('users/create', [SuperAdminUserController::class, 'create'])->name('users.create');
+    Route::post('users', [SuperAdminUserController::class, 'store'])->name('users.store');
+    Route::get('users/{user}/edit', [SuperAdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('users/{user}', [SuperAdminUserController::class, 'update'])->name('users.update');
 });
 
 

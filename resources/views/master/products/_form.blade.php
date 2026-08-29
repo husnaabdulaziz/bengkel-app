@@ -107,6 +107,10 @@
             <label>Satuan</label>
             <input type="text" name="satuan" value="{{ old('satuan', $p?->satuan ?? 'pcs') }}" required class="form-control">
         </div>
+        <div class="col-md-6 form-group">
+            <label>Lokasi Rak (opsional)</label>
+            <input type="text" name="lokasi_rak" value="{{ old('lokasi_rak', $p?->lokasi_rak) }}" placeholder="mis. Rak 1.A" class="form-control">
+        </div>
     </div>
 </div>
 
