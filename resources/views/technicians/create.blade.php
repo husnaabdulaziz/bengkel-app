@@ -25,15 +25,9 @@
                     <label>Telpon</label>
                     <input type="text" name="telpon" value="{{ old('telpon') }}" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>Email (untuk login)</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required class="form-control">
-                </div>
+                
             </div>
+            
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary">Simpan</button>
             </div>

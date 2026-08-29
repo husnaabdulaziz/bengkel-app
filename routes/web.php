@@ -193,12 +193,15 @@ Route::middleware(['auth', EnsureSuperAdmin::class])->prefix('super-admin')->nam
 
     Route::get('backup', [\App\Http\Controllers\SuperAdminBackupController::class, 'index'])->name('backup.index');
     Route::get('backup/download', [\App\Http\Controllers\SuperAdminBackupController::class, 'download'])->name('backup.download');
+    Route::resource('announcements', \App\Http\Controllers\SuperAdminAnnouncementController::class)->except(['show']);
 });
 
 Route::middleware(['auth', \App\Http\Middleware\EnsureSuperAdmin::class])->group(function () {
     Route::get('switch-company', [\App\Http\Controllers\CompanySwitchController::class, 'index'])->name('switch-company.index');
     Route::post('switch-company', [\App\Http\Controllers\CompanySwitchController::class, 'store'])->name('switch-company.store');
     Route::post('switch-company/clear', [\App\Http\Controllers\CompanySwitchController::class, 'clear'])->name('switch-company.clear');
+    
+    
 });
 
 require __DIR__.'/auth.php';

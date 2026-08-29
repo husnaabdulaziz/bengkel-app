@@ -68,6 +68,7 @@ class ProductController extends Controller
                     'harga_ojol' => number_format($p->harga_ojol, 0, ',', '.'),
                     'stock_total' => $p->is_jasa ? null : $p->branchStocks()->sum('stock_qty'),
                     'lokasi_rak' => $p->lokasi_rak,
+                    'status' => $p->status,
                     'edit_url' => route('products.edit', $p),
                     'delete_url' => route('products.destroy', $p),
                 ];
@@ -172,6 +173,7 @@ class ProductController extends Controller
             'garansi_durasi_hari' => 'nullable|integer|min:1',
             'lokasi_rak' => 'nullable|string|max:50',
             'minimum_stock' => 'required|integer|min:0',
+            'status' => 'nullable|in:active,inactive',
             
         ]);
     }

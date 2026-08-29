@@ -182,6 +182,13 @@
         <label>Minimum Stock</label>
         <input type="number" name="minimum_stock" value="{{ old('minimum_stock', $p?->minimum_stock ?? 0) }}" required class="form-control">
     </div>
+    <div class="col-md-6 form-group">
+        <label>Status Produk</label>
+        <select name="status" class="form-control">
+            <option value="active" @selected(old('status', $p?->status ?? 'active') === 'active')>Aktif (bisa dijual)</option>
+            <option value="inactive" @selected(old('status', $p?->status) === 'inactive')>Nonaktif (berhenti dijual, tidak muncul di POS)</option>
+        </select>
+    </div>
 </div>
 
 @push('scripts')

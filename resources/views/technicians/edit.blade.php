@@ -25,14 +25,7 @@
                     <label>Telpon</label>
                     <input type="text" name="telpon" value="{{ old('telpon', $technician->phone) }}" class="form-control">
                 </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" value="{{ old('email', $technician->email) }}" required class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Password Baru (kosongkan jika tidak diubah)</label>
-                    <input type="password" name="password" class="form-control">
-                </div>
+                
             </div>
             <div class="card-footer">
                 <button type="submit" class="btn btn-primary">Simpan Perubahan</button>

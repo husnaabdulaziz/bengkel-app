@@ -39,6 +39,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()->status === 'inactive') {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini sudah dinonaktifkan. Hubungi Admin Toko atau Super Admin.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

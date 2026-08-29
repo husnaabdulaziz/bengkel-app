@@ -108,7 +108,42 @@
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" x-data="{ userMenuOpen: false }"
       @click="if (window.innerWidth < 992 && document.body.classList.contains('sidebar-open') && !$event.target.closest('.main-sidebar') && !$event.target.closest('[data-widget=pushmenu]')) { document.body.classList.remove('sidebar-open'); }">
-<div class="wrapper">
+
+      @php
+            $pendingAnnouncements = collect();
+            if (auth()->check() && !auth()->user()->is_super_admin) {
+                $pendingAnnouncements = \App\Models\Announcement::getUnseenForUser(auth()->user());
+                foreach ($pendingAnnouncements as $ann) {
+                    \App\Models\AnnouncementView::firstOrCreate([
+                        'announcement_id' => $ann->id,
+                        'user_id' => auth()->id(),
+                        'viewed_date' => now()->toDateString(),
+                    ]);
+                }
+            }
+        @endphp
+
+        @if ($pendingAnnouncements->isNotEmpty())
+        <div x-data="{ show: true }" x-show="show" x-cloak
+            style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+                <div style="background: #fff; border-radius: 10px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div class="p-4">
+                        @foreach ($pendingAnnouncements as $ann)
+                            <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                <h5 class="font-weight-bold"><i class="fas fa-bullhorn text-warning mr-2"></i>{{ $ann->title }}</h5>
+                                <p class="mb-0" style="white-space: pre-line;">{{ $ann->message }}</p>
+                            </div>
+                        @endforeach
+                        <button type="button" @click="show = false" class="btn btn-primary btn-block">Mengerti</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <div class="wrapper">
+      <div class="wrapper">
 
     <!-- Navbar -->
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -376,7 +411,12 @@
                             </a>
                         </li>
                     @endif
-
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.announcements.index') }}" class="nav-link {{ request()->routeIs('super-admin.announcements.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bullhorn"></i>
+                            <p>Pengumuman</p>
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a href="{{ route('super-admin.users.index') }}" class="nav-link {{ request()->routeIs('super-admin.users.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users-cog"></i>

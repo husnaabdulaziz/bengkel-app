@@ -82,6 +82,7 @@
                                     </a>
                                     <span x-text="p.nama"></span>
                                     <span x-show="p.is_jasa" class="badge badge-purple">Jasa</span>
+                                    <span x-show="p.status === 'inactive'" class="badge badge-secondary">Nonaktif</span>
                                     <div class="d-md-none small text-muted mt-1" x-show="expanded[p.id]" x-cloak>
                                         Kategori: <span x-text="p.category || '-'"></span><br>
                                         Brand: <span x-text="p.brand || '-'"></span>

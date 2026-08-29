@@ -16,7 +16,6 @@
                         <th>Nama Lengkap</th>
                         <th>Inisial</th>
                         <th class="d-none d-md-table-cell">Telpon</th>
-                        <th class="d-none d-md-table-cell">Email</th>
                         <th style="width: 90px;">Aksi</th>
                     </tr>
                 </thead>
@@ -26,7 +25,6 @@
                             <td>{{ $tech->name }}</td>
                             <td><span class="badge badge-info">{{ $tech->inisial }}</span></td>
                             <td class="d-none d-md-table-cell">{{ $tech->phone }}</td>
-                            <td class="d-none d-md-table-cell">{{ $tech->email }}</td>
                             <td class="text-nowrap">
                                 <a href="{{ route('technicians.edit', $tech) }}" class="btn btn-outline-primary" title="Edit" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;"><i class="fas fa-edit"></i></a>
                                 <form method="POST" action="{{ route('technicians.destroy', $tech) }}" class="d-inline" onsubmit="return confirm('Hapus mekanik ini?')">
