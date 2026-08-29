@@ -46,15 +46,15 @@ class DashboardController extends Controller
 
         $totalPenjualan = (clone $completedOrders)->sum('total_amount');
 
-        $laborCost = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end, $branchId) {
-                $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
-            })
-            ->with('product:id,harga_modal')
-            ->get()
-            ->sum(function ($item) {
-                $modal = $item->product->harga_modal ?? 0;
-                return $item->subtotal - ($modal * $item->quantity);
-            });
+        $totalModal = WorkOrderItem::whereHas('workOrder', function ($q) use ($start, $end, $branchId) {
+        $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
+        })
+        ->with('product:id,harga_modal')
+        ->get()
+        ->sum(function ($item) {
+            $modal = $item->product->harga_modal ?? 0;
+            return $modal * $item->quantity;
+        });
 
         $feeOtomatis = \App\Models\WorkOrderItemTechnician::whereHas('item.workOrder', function ($q) use ($start, $end, $branchId) {
                 $q->where('stage', 'completed')->where('branch_id', $branchId)->whereBetween('paid_at', [$start, $end]);
@@ -67,7 +67,7 @@ class DashboardController extends Controller
 
         $totalPengeluaran = Expense::whereBetween('expense_date', [$start, $end])->where('branch_id', $branchId)->sum('amount');
 
-        $totalLaba = $laborCost - $feeOtomatis - $feeManual - $totalPengeluaran;
+        $totalLaba = $totalPenjualan - $totalModal - $feeOtomatis - $feeManual - $totalPengeluaran;
 
         $chartRaw = WorkOrder::where('stage', 'completed')
             ->where('branch_id', $branchId)
