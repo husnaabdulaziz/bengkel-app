@@ -82,25 +82,24 @@ class PurchaseController extends Controller
 
     /** Halaman "Buat PO" — daftar item stock menipis, dikelompokkan per Vendor */
     public function poBuilder()
-    {
-        $branchId = auth()->user()->isSuperAdmin()
-            ? \App\Models\Branch::first()?->id
-            : auth()->user()->branches()->value('branches.id');
+        {
+            $branchId = $this->activeBranchId();
 
-        $lowStockItems = LowStockController::getLowStockItems();
+            $lowStockItems = LowStockController::getLowStockItems()
+                ->filter(fn ($item) => $item->branch_id == $branchId);
 
-        $itemsByVendor = $lowStockItems
-            ->filter(fn ($item) => $item->product->default_supplier_id)
-            ->groupBy('product.default_supplier_id')
-            ->map(function ($items, $vendorId) {
-                return [
-                    'vendor' => Supplier::find($vendorId),
-                    'items' => $items->values(),
-                ];
-            });
+            $itemsByVendor = $lowStockItems
+                ->filter(fn ($item) => $item->product->default_supplier_id)
+                ->groupBy('product.default_supplier_id')
+                ->map(function ($items, $vendorId) {
+                    return [
+                        'vendor' => Supplier::find($vendorId),
+                        'items' => $items->values(),
+                    ];
+                });
 
-        return view('inventory.purchases.create-po', compact('itemsByVendor', 'branchId'));
-    }
+            return view('inventory.purchases.create-po', compact('itemsByVendor', 'branchId'));
+        }
 
     /** Simpan PO — status "pending", stock BELUM ditambah sampai barang benar-benar diterima */
     public function storePO(Request $request)

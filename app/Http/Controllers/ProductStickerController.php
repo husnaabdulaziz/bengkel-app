@@ -17,18 +17,24 @@ class ProductStickerController extends Controller
         $selectedCategoryId = $request->get('category_id');
 
         $products = collect();
-        if ($selectedBrandId || $selectedCategoryId) {
-            $query = Product::where('status', 'active');
+            if ($selectedBrandId || $selectedCategoryId) {
+                $branchId = $this->activeBranchId();
 
-            if ($selectedBrandId) {
-                $query->where('brand_id', $selectedBrandId);
-            }
-            if ($selectedCategoryId) {
-                $query->where('category_id', $selectedCategoryId);
-            }
+                $query = Product::where('status', 'active')
+                    ->where('is_jasa', false)
+                    ->whereHas('branchStocks', function ($q) use ($branchId) {
+                        $q->where('branch_id', $branchId)->where('stock_qty', '>', 0);
+                    });
 
-            $products = $query->orderBy('model_name')->orderBy('ukuran')->get();
-        }
+                if ($selectedBrandId) {
+                    $query->where('brand_id', $selectedBrandId);
+                }
+                if ($selectedCategoryId) {
+                    $query->where('category_id', $selectedCategoryId);
+                }
+
+                $products = $query->orderBy('model_name')->orderBy('ukuran')->get();
+            }
 
         $groups = $products->groupBy(function ($p) {
             return $p->model_name ?: 'Produk: ' . $p->nama;
