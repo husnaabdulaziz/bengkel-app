@@ -9,7 +9,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <div x-data="{ showKategori: false, showSubkategori: false, showBrand: false, searchQuery: '' }">
+    <div x-data="{ showKategori: false, showSubkategori: false, showBrand: false, showLokasi: false, searchQuery: '' }">
 
         <div class="card">
             <div class="card-body">
@@ -17,7 +17,8 @@
                     <span class="text-muted small mr-3">Tampilkan kolom tambahan:</span>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showKategori" class="mr-1"> Kategori</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showSubkategori" class="mr-1"> Sub Kategori</label>
-                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showBrand" class="mr-1"> Brand</label>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showBrand" class="mr-1"> Brand</label>
+                    <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showLokasi" class="mr-1"> Lokasi Rak</label>
                 </div>
                 <input type="text" x-model="searchQuery" placeholder="Cari nama produk, kategori, sub kategori, atau brand..." class="form-control">
             </div>
@@ -34,6 +35,7 @@
                             <th x-show="showKategori" x-cloak>Kategori</th>
                             <th x-show="showSubkategori" x-cloak>Sub Kategori</th>
                             <th x-show="showBrand" x-cloak>Brand</th>
+                            <th x-show="showLokasi" x-cloak>Lokasi</th>
                             <th class="text-right">Stock Sistem</th>
                             <th class="text-right">Stock Real</th>
                             <th class="text-right">Selisih</th>
@@ -43,13 +45,14 @@
                     <tbody>
                         @foreach ($opname->items as $item)
                             @php
-                                $searchable = strtolower($item->product->nama . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? ''));
+                                $searchable = strtolower($item->product->nama . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? '') . ' ' . ($item->product->lokasi_rak ?? ''));
                             @endphp
                             <tr x-show="searchQuery === '' || '{{ addslashes($searchable) }}'.includes(searchQuery.toLowerCase())">
                                 <td>{{ $item->product->nama }}</td>
                                 <td class="text-muted" x-show="showKategori" x-cloak>{{ $item->product->category?->nama ?? '-' }}</td>
                                 <td class="text-muted" x-show="showSubkategori" x-cloak>{{ $item->product->subcategory?->nama ?? '-' }}</td>
                                 <td class="text-muted" x-show="showBrand" x-cloak>{{ $item->product->brand?->nama ?? '-' }}</td>
+                                <td class="text-muted" x-show="showLokasi" x-cloak>{{ $item->product->lokasi_rak ?? '-' }}</td>
                                 <td class="text-right">{{ $item->system_stock }}</td>
                                 <td class="text-right">
                                     <input type="number" name="real_stock[{{ $item->id }}]" value="{{ $item->real_stock }}" min="0"
@@ -84,7 +87,7 @@
         @else
             <div class="d-flex justify-content-between align-items-center">
                 <p class="text-success font-weight-bold mb-0">Opname ini sudah selesai dan stock telah disesuaikan.</p>
-                <a :href="`{{ route('stock-opnames.pdf', $opname) }}?kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}`"
+                <a :href="`{{ route('stock-opnames.pdf', $opname) }}?kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}&lokasi=${showLokasi ? 1 : 0}`"
                    target="_blank" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Download PDF</a>
             </div>
         @endif

@@ -4,7 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Bengkel') }} - {{ $title ?? 'Dashboard' }}</title>
+    <title>{{ auth()->user()->company?->nama_toko ?? config('app.name', 'Bengkel') }} - {{ $title ?? 'Dashboard' }}</title>
+        @if (auth()->user()?->company?->logo_path)
+            <link rel="icon" type="image/png" href="{{ asset('storage/' . auth()->user()->company->logo_path) }}">
+        @endif
 
     @php
         $colorDefaults = [
@@ -353,8 +356,8 @@
     </div>
 
         <footer class="main-footer">
-        <strong>&copy; {{ date('Y') }} Bengkel Jaya.</strong>
-    </footer>
+            <strong>&copy; {{ date('Y') }} {{ auth()->user()->company?->nama_toko ?? config('app.name') }}.</strong>
+        </footer>
 </div>
 
 @stack('scripts')

@@ -143,6 +143,7 @@ class StockOpnameController extends Controller
             'showKategori' => $request->boolean('kategori'),
             'showSubkategori' => $request->boolean('subkategori'),
             'showBrand' => $request->boolean('brand'),
+            'showLokasi' => $request->boolean('lokasi'),
         ]);
 
         return $pdf->stream($stockOpname->kode_opname . '.pdf');

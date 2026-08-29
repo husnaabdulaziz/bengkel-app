@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @php $company = \App\Models\Company::first(); @endphp
+    <title>{{ $company?->nama_toko ?? config('app.name', 'Laravel') }}</title>
+        @if ($company?->logo_path)
+            <link rel="icon" type="image/png" href="{{ asset('storage/' . $company->logo_path) }}">
+        @endif
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -18,7 +20,11 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    @if ($company?->logo_path)
+                        <img src="{{ asset('storage/' . $company->logo_path) }}" alt="Logo" class="w-20 h-20 object-contain">
+                    @else
+                        <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    @endif
                 </a>
             </div>
 

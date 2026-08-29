@@ -32,6 +32,7 @@
                 @if ($showKategori) <th>Kategori</th> @endif
                 @if ($showSubkategori) <th>Sub Kategori</th> @endif
                 @if ($showBrand) <th>Brand</th> @endif
+                @if ($showLokasi) <th>Lokasi</th> @endif
                 <th class="text-right">Stock Sistem</th>
                 <th class="text-right">Stock Real</th>
                 <th class="text-right">Selisih</th>
@@ -45,6 +46,7 @@
                     @if ($showKategori) <td>{{ $item->product->category?->nama ?? '-' }}</td> @endif
                     @if ($showSubkategori) <td>{{ $item->product->subcategory?->nama ?? '-' }}</td> @endif
                     @if ($showBrand) <td>{{ $item->product->brand?->nama ?? '-' }}</td> @endif
+                    @if ($showLokasi) <td>{{ $item->product->lokasi_rak ?? '-' }}</td> @endif
                     <td class="text-right">{{ $item->system_stock }}</td>
                     <td class="text-right">{{ $item->real_stock }}</td>
                     <td class="text-right {{ $item->difference > 0 ? 'text-green' : ($item->difference < 0 ? 'text-red' : '') }}">
