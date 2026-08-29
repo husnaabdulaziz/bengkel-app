@@ -368,6 +368,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{{ route('super-admin.backup.index') }}" class="nav-link {{ request()->routeIs('super-admin.backup.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-database"></i>
+                            <p>Backup Database</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ route('super-admin.reset-data.edit') }}" class="nav-link {{ request()->routeIs('super-admin.reset-data.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-trash-restore"></i>
                             <p>Reset Data</p>

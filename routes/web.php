@@ -181,6 +181,9 @@ Route::middleware(['auth', EnsureSuperAdmin::class])->prefix('super-admin')->nam
 
     Route::get('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'edit'])->name('permissions.edit');
     Route::post('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'update'])->name('permissions.update');
+
+    Route::get('backup', [\App\Http\Controllers\SuperAdminBackupController::class, 'index'])->name('backup.index');
+    Route::get('backup/download', [\App\Http\Controllers\SuperAdminBackupController::class, 'download'])->name('backup.download');
 });
 
 Route::middleware(['auth', \App\Http\Middleware\EnsureSuperAdmin::class])->group(function () {
