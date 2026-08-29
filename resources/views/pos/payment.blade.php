@@ -1,16 +1,19 @@
 <x-admin-layout title="Pembayaran">
 
-    <div x-data="{
-             discountType: '',
-             discountValue: 0,
-             subtotal: {{ $workOrder->items->sum('subtotal') }},
-             get discountAmount() {
-                 if (!this.discountType || !this.discountValue) return 0;
-                 return this.discountType === 'percent' ? this.subtotal * (this.discountValue / 100) : parseFloat(this.discountValue);
-             },
-             get total() { return Math.max(this.subtotal - this.discountAmount, 0); }
-         }">
-
+    <div class="flex-1 min-w-0 max-w-2xl"
+        x-data="{
+            discountType: '',
+            discountValue: 0,
+            subtotal: {{ $workOrder->items->sum('subtotal') }},
+            payments: [{ method: 'tunai', amount: {{ $workOrder->items->sum('subtotal') }} }],
+            get discountAmount() {
+                if (!this.discountType || !this.discountValue) return 0;
+                return this.discountType === 'percent' ? this.subtotal * (this.discountValue / 100) : parseFloat(this.discountValue);
+            },
+            get total() { return Math.max(this.subtotal - this.discountAmount, 0); },
+            get paymentsSum() { return this.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0); },
+            get remaining() { return Math.round((this.total - this.paymentsSum) * 100) / 100; }
+        }">
         <div class="row">
             <div class="col-lg-3 order-2 order-lg-1">
                 @include('pos.partials.orders-sidebar')
@@ -67,19 +70,30 @@
 
                         <div class="form-group">
                             <label>Metode Pembayaran</label>
-                            <div>
-                                <div class="custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="pay_tunai" name="payment_method" value="tunai" class="custom-control-input" required>
-                                    <label class="custom-control-label" for="pay_tunai">Tunai</label>
+                            <template x-for="(pay, index) in payments" :key="index">
+                                <div class="form-row align-items-center mb-2">
+                                    <div class="col-5">
+                                        <select :name="`payments[${index}][method]`" x-model="pay.method" required class="form-control form-control-sm">
+                                            <option value="tunai">Tunai</option>
+                                            <option value="transfer">Transfer</option>
+                                            <option value="debit">Debit</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-5">
+                                        <input type="number" step="0.01" :name="`payments[${index}][amount]`" x-model.number="pay.amount" min="0" required class="form-control form-control-sm" placeholder="Nominal">
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" @click="payments.splice(index, 1)" x-show="payments.length > 1" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                    </div>
                                 </div>
-                                <div class="custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="pay_transfer" name="payment_method" value="transfer" class="custom-control-input">
-                                    <label class="custom-control-label" for="pay_transfer">Transfer</label>
-                                </div>
-                                <div class="custom-control custom-radio custom-control-inline">
-                                    <input type="radio" id="pay_debit" name="payment_method" value="debit" class="custom-control-input">
-                                    <label class="custom-control-label" for="pay_debit">Debit</label>
-                                </div>
+                            </template>
+                            <button type="button" @click="payments.push({ method: 'tunai', amount: 0 })" class="btn btn-sm btn-outline-secondary">+ Tambah Metode Bayar</button>
+
+                            <div class="mt-2 small">
+                                <span>Total Dibayar: Rp <span x-text="paymentsSum.toLocaleString('id-ID')"></span></span>
+                                <span class="ml-3" :class="remaining === 0 ? 'text-success font-weight-bold' : 'text-danger font-weight-bold'">
+                                    Sisa: Rp <span x-text="remaining.toLocaleString('id-ID')"></span>
+                                </span>
                             </div>
                         </div>
 
@@ -89,7 +103,8 @@
                             <div class="d-flex justify-content-between font-weight-bold h5"><span>Total</span><span x-text="'Rp ' + total.toLocaleString('id-ID')"></span></div>
                         </div>
 
-                        <button type="submit" class="btn btn-success btn-block btn-lg">Konfirmasi Pembayaran</button>
+                        <button type="submit" class="btn btn-success btn-block btn-lg" :disabled="remaining !== 0">Konfirmasi Pembayaran</button>
+                        <p class="text-danger text-center small mt-1" x-show="remaining !== 0">Total pembayaran harus pas dengan tagihan sebelum bisa disimpan.</p>
                     </div>
                 </form>
             </div>

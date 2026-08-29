@@ -135,11 +135,13 @@ class CashClosingController extends Controller
     /** Hitung ulang cash_sales, cash_expenses, expected_balance berdasarkan data real-time */
     private function refreshComputedFields(CashClosing $closing): void
     {
-        $cashSales = WorkOrder::where('branch_id', $closing->branch_id)
-            ->where('stage', 'completed')
-            ->where('payment_method', 'tunai')
-            ->whereDate('paid_at', $closing->closing_date)
-            ->sum('total_amount');
+        $cashSales = \App\Models\WorkOrderPayment::where('payment_method', 'tunai')
+            ->whereHas('workOrder', function ($q) use ($closing) {
+                $q->where('branch_id', $closing->branch_id)
+                ->where('stage', 'completed')
+                ->whereDate('paid_at', $closing->closing_date);
+            })
+            ->sum('amount');
 
         $cashExpenses = Expense::where('branch_id', $closing->branch_id)
             ->whereDate('expense_date', $closing->closing_date)

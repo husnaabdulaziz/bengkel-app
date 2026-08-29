@@ -399,7 +399,9 @@ class PosController extends Controller
         $validated = $request->validate([
             'discount_type' => 'nullable|in:percent,fixed',
             'discount_value' => 'nullable|numeric|min:0',
-            'payment_method' => 'required|in:tunai,transfer,debit',
+            'payments' => 'required|array|min:1',
+            'payments.*.method' => 'required|in:tunai,transfer,debit',
+            'payments.*.amount' => 'required|numeric|min:0.01',
         ]);
 
         DB::transaction(function () use ($validated, $workOrder) {
@@ -408,7 +410,10 @@ class PosController extends Controller
                 'discount_value' => $validated['discount_value'] ?? 0,
             ]);
             $workOrder->recalculateTotal();
-
+            $totalPayments = collect($validated['payments'])->sum('amount');
+            if (round($totalPayments, 2) !== round($workOrder->total_amount, 2)) {
+                throw new \Exception('Total pembayaran (Rp ' . number_format($totalPayments, 0, ',', '.') . ') tidak sama dengan tagihan (Rp ' . number_format($workOrder->total_amount, 0, ',', '.') . ').');
+            }
             foreach ($workOrder->items as $item) {
                 if ($item->product && !$item->product->is_jasa) {
                     StockMovement::create([
@@ -447,15 +452,27 @@ class PosController extends Controller
                 }
             }
 
-            $invoiceNumber = 'INV-' . $workOrder->branch_id . '-' . now()->format('Ymd') . '-' . str_pad($workOrder->id, 4, '0', STR_PAD_LEFT);
+                $invoiceNumber = 'INV-' . $workOrder->branch_id . '-' . now()->format('Ymd') . '-' . str_pad($workOrder->id, 4, '0', STR_PAD_LEFT);
 
-            $workOrder->update([
-                'invoice_number' => $invoiceNumber,
-                'stage' => 'completed',
-                'payment_method' => $validated['payment_method'],
-                'payment_status' => 'paid',
-                'paid_at' => now(),
-            ]);
+                // Rangkum jadi 1 label sederhana untuk kolom lama (dipakai badge/laporan ringkas)
+                $methodsUsed = collect($validated['payments'])->pluck('method')->unique();
+                $summaryMethod = $methodsUsed->count() > 1 ? 'campuran' : $methodsUsed->first();
+
+                $workOrder->update([
+                    'invoice_number' => $invoiceNumber,
+                    'stage' => 'completed',
+                    'payment_method' => $summaryMethod,
+                    'payment_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                foreach ($validated['payments'] as $payment) {
+                    \App\Models\WorkOrderPayment::create([
+                        'work_order_id' => $workOrder->id,
+                        'payment_method' => $payment['method'],
+                        'amount' => $payment['amount'],
+                    ]);
+                }
 
             $workOrder->customer->update(['last_visit_at' => now()]);
             \App\Models\ActivityLog::create([
