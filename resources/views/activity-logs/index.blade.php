@@ -20,6 +20,9 @@
                 <thead>
                     <tr>
                         <th style="width: 150px;">Waktu</th>
+                        @if ($isSuperAdmin)
+                            <th>Toko</th>
+                        @endif
                         <th>User</th>
                         <th>Aktivitas</th>
                         <th class="d-none d-md-table-cell">IP</th>
@@ -29,6 +32,9 @@
                     @forelse ($logs as $log)
                         <tr>
                             <td>{{ $log->created_at?->format('d/m/Y H:i') }}</td>
+                            @if ($isSuperAdmin)
+                                <td>{{ $log->company?->nama_toko ?? '-' }}</td>
+                            @endif
                             <td>{{ $log->user?->name ?? 'System' }}</td>
                             <td>{{ $log->description }}</td>
                             <td class="d-none d-md-table-cell text-muted small">{{ $log->ip_address }}</td>

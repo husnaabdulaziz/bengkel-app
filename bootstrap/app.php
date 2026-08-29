@@ -15,16 +15,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->web(append: [
+            \App\Http\Middleware\ActAsCompanyForSuperAdmin::class,
             \App\Http\Middleware\SetPermissionsTeam::class,
         ]);
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
         ]);
         $middleware->alias([
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'menu_enabled' => \App\Http\Middleware\CheckMenuEnabled::class,
+            'menu_permission' => \App\Http\Middleware\CompanyPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

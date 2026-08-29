@@ -41,13 +41,13 @@ Route::middleware('auth')->group(function () {
 });
 
 // ===== Dashboard =====
-Route::middleware(['auth', 'verified', 'permission:access_dashboard'])->group(function () {
+Route::middleware(['auth', 'verified', 'menu_permission:access_dashboard'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/data', [DashboardController::class, 'data'])->name('dashboard.data');
 });
 
 // ===== Produk =====
-Route::middleware(['auth', 'permission:access_produk'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_produk'])->group(function () {
     Route::resource('product-categories', ProductCategoryController::class)->except(['show', 'create', 'edit']);
     Route::resource('product-brands', ProductBrandController::class)->except(['show', 'create', 'edit']);
     Route::post('product-brands/quick', [ProductBrandController::class, 'quickStore'])->name('product-brands.quick');
@@ -65,16 +65,19 @@ Route::middleware(['auth', 'permission:access_produk'])->group(function () {
 });
 
 // ===== Pembelian =====
-Route::middleware(['auth', 'permission:access_pembelian'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_pembelian'])->group(function () {
     Route::resource('purchases', PurchaseController::class)->only(['index', 'create', 'store']);
 });
 
-// ===== Stock =====
-Route::middleware(['auth', 'permission:access_stock'])->group(function () {
+// ===== Stock Opname =====
+Route::middleware(['auth', 'menu_permission:access_stock_opname', 'menu_enabled:access_stock_opname'])->group(function () {
     Route::resource('stock-opnames', StockOpnameController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
     Route::post('stock-opnames/{stockOpname}/adjust', [StockOpnameController::class, 'adjust'])->name('stock-opnames.adjust');
     Route::get('stock-opnames/{stockOpname}/pdf', [StockOpnameController::class, 'pdf'])->name('stock-opnames.pdf');
+});
 
+// ===== Transfer Stock =====
+Route::middleware(['auth', 'menu_permission:access_stock_transfer', 'menu_enabled:access_stock_transfer'])->group(function () {
     Route::resource('stock-transfers', StockTransferController::class)->only(['index', 'create', 'store', 'show']);
     Route::post('stock-transfers/{stockTransfer}/approve', [StockTransferController::class, 'approve'])->name('stock-transfers.approve');
     Route::post('stock-transfers/{stockTransfer}/ship', [StockTransferController::class, 'ship'])->name('stock-transfers.ship');
@@ -82,7 +85,7 @@ Route::middleware(['auth', 'permission:access_stock'])->group(function () {
 });
 
 // ===== POS =====
-Route::middleware(['auth', 'permission:access_pos'])->prefix('pos')->name('pos.')->group(function () {
+Route::middleware(['auth', 'menu_permission:access_pos'])->prefix('pos')->name('pos.')->group(function () {
     Route::get('/new', [PosController::class, 'create'])->name('create');
     Route::post('/', [PosController::class, 'store'])->name('store');
     Route::get('/search-customer', [PosController::class, 'searchCustomer'])->name('search-customer');
@@ -101,13 +104,13 @@ Route::middleware(['auth', 'permission:access_pos'])->prefix('pos')->name('pos.'
 });
 
 // ===== Mekanik & Fee Mekanik =====
-Route::middleware(['auth', 'permission:access_mekanik'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_mekanik'])->group(function () {
     Route::resource('technicians', TechnicianController::class)->parameters(['technicians' => 'technician']);
     Route::resource('technician-manual-fees', TechnicianManualFeeController::class)->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 });
 
 // reports/technician-fee dipakai di 2 menu (Fee Mekanik & Laporan Keuangan), jadi terima salah satu permission
-Route::middleware(['auth', 'permission:access_mekanik|access_laporan_keuangan'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_mekanik|access_laporan_keuangan'])->group(function () {
     Route::get('reports/technician-fee', [TechnicianFeeReportController::class, 'index'])->name('reports.technician-fee');
     Route::get('reports/technician-fee/pdf', [TechnicianFeeReportController::class, 'pdf'])->name('reports.technician-fee.pdf');
     Route::patch('reports/technician-fee/{workOrderItemTechnician}', [TechnicianFeeReportController::class, 'updateFee'])->name('reports.technician-fee.update');
@@ -116,7 +119,7 @@ Route::middleware(['auth', 'permission:access_mekanik|access_laporan_keuangan'])
 });
 
 // ===== Laporan Keuangan =====
-Route::middleware(['auth', 'permission:access_laporan_keuangan'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_laporan_keuangan'])->group(function () {
     Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'destroy']);
 
     Route::get('reports/financial', [FinancialReportController::class, 'index'])->name('reports.financial');
@@ -127,7 +130,7 @@ Route::middleware(['auth', 'permission:access_laporan_keuangan'])->group(functio
 });
 
 // ===== Kas Harian =====
-Route::middleware(['auth', 'permission:access_kas_harian'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_kas_harian'])->group(function () {
     Route::get('cash-closings/today', [CashClosingController::class, 'today'])->name('cash-closings.today');
     Route::post('cash-closings/open', [CashClosingController::class, 'open'])->name('cash-closings.open');
     Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
@@ -136,25 +139,25 @@ Route::middleware(['auth', 'permission:access_kas_harian'])->group(function () {
 });
 
 // ===== Garansi =====
-Route::middleware(['auth', 'permission:access_garansi'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_garansi'])->group(function () {
     Route::get('warranties', [WarrantyController::class, 'index'])->name('warranties.index');
     Route::get('warranties/{warranty}', [WarrantyController::class, 'show'])->name('warranties.show');
     Route::post('warranties/{warranty}/claim', [WarrantyController::class, 'claim'])->name('warranties.claim');
 });
 
 // ===== Pelanggan =====
-Route::middleware(['auth', 'permission:access_pelanggan'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_pelanggan'])->group(function () {
     Route::resource('customers', CustomerController::class)->only(['index', 'show', 'edit', 'update']);
     Route::get('customers-export', [CustomerController::class, 'export'])->name('customers.export');
 });
 
 // ===== Log Aktivitas =====
-Route::middleware(['auth', 'permission:access_log_aktivitas'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_log_aktivitas'])->group(function () {
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });
 
 // ===== Pengaturan Toko =====
-Route::middleware(['auth', 'permission:access_pengaturan_toko'])->group(function () {
+Route::middleware(['auth', 'menu_permission:access_pengaturan_toko'])->group(function () {
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::post('settings', [SettingController::class, 'update'])->name('settings.update');
 
@@ -178,6 +181,12 @@ Route::middleware(['auth', EnsureSuperAdmin::class])->prefix('super-admin')->nam
 
     Route::get('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'edit'])->name('permissions.edit');
     Route::post('permissions', [\App\Http\Controllers\SuperAdminPermissionController::class, 'update'])->name('permissions.update');
+});
+
+Route::middleware(['auth', \App\Http\Middleware\EnsureSuperAdmin::class])->group(function () {
+    Route::get('switch-company', [\App\Http\Controllers\CompanySwitchController::class, 'index'])->name('switch-company.index');
+    Route::post('switch-company', [\App\Http\Controllers\CompanySwitchController::class, 'store'])->name('switch-company.store');
+    Route::post('switch-company/clear', [\App\Http\Controllers\CompanySwitchController::class, 'clear'])->name('switch-company.clear');
 });
 
 require __DIR__.'/auth.php';

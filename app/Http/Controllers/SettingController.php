@@ -23,6 +23,9 @@ class SettingController extends Controller
 
     public function edit()
     {
+        if (!auth()->user()->company_id) {
+        return redirect()->route('super-admin.users.index')->with('error', 'Super Admin tidak terikat ke toko manapun, tidak bisa mengakses Pengaturan Toko.');
+        }
         $company = auth()->user()->company;
 
         $printerPaperSize = StoreSetting::where('company_id', $company->id)
@@ -42,6 +45,9 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        if (!auth()->user()->company_id) {
+            return redirect()->route('super-admin.users.index')->with('error', 'Super Admin tidak terikat ke toko manapun, tidak bisa mengakses Pengaturan Toko.');
+        }
         $company = auth()->user()->company;
 
         $validated = $request->validate([

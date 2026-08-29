@@ -10,7 +10,8 @@ class MenuPermissions
         'access_pos'               => 'POS (Kasir)',
         'access_produk'            => 'Produk',
         'access_pembelian'         => 'Pembelian',
-        'access_stock'             => 'Stock (Opname & Transfer)',
+        'access_stock_opname'      => 'Stock Opname',
+        'access_stock_transfer'    => 'Transfer Stock',
         'access_mekanik'           => 'Mekanik & Fee Mekanik',
         'access_laporan_keuangan'  => 'Laporan Keuangan',
         'access_kas_harian'        => 'Kas Harian',
@@ -31,7 +32,7 @@ class MenuPermissions
         'access_pos',
         'access_produk',
         'access_pembelian',
-        'access_stock',
+        'access_stock_opname',
         'access_kas_harian',
     ];
 }

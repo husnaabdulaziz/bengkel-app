@@ -207,18 +207,22 @@
                     </li>
                     @endcan
 
-                    @can('access_stock')
-                    <li class="nav-item" x-data="{ open: {{ request()->routeIs('stock-opnames.*', 'stock-transfers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
-                    <a href="#" class="nav-link" @click.prevent="open = !open">
-                        <i class="nav-icon fas fa-boxes"></i>
-                        <p>Stock <i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                            <li class="nav-item"><a href="{{ route('stock-opnames.index') }}" class="nav-link {{ request()->routeIs('stock-opnames.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Stock Opname</p></a></li>
-                            <li class="nav-item"><a href="{{ route('stock-transfers.index') }}" class="nav-link {{ request()->routeIs('stock-transfers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Transfer Stock</p></a></li>
-                        </ul>
-                    </li>
-                    @endcan
+                    @canany(['access_stock_opname', 'access_stock_transfer'])
+                        <li class="nav-item" x-data="{ open: {{ request()->routeIs('stock-opnames.*', 'stock-transfers.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
+                        <a href="#" class="nav-link" @click.prevent="open = !open">
+                            <i class="nav-icon fas fa-boxes"></i>
+                            <p>Stock <i class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                                @can('access_stock_opname')
+                                <li class="nav-item"><a href="{{ route('stock-opnames.index') }}" class="nav-link {{ request()->routeIs('stock-opnames.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Stock Opname</p></a></li>
+                                @endcan
+                                @can('access_stock_transfer')
+                                <li class="nav-item"><a href="{{ route('stock-transfers.index') }}" class="nav-link {{ request()->routeIs('stock-transfers.*') ? 'active' : '' }}"><i class="far fa-circle nav-icon"></i><p>Transfer Stock</p></a></li>
+                                @endcan
+                            </ul>
+                        </li>
+                        @endcanany
 
                     @can('access_mekanik')
                     <li class="nav-item" x-data="{ open: {{ request()->routeIs('technicians.*', 'reports.technician-fee*', 'technician-manual-fees.*') ? 'true' : 'false' }} }" :class="{ 'menu-open': open }">
@@ -321,32 +325,55 @@
                     </li>
                     @endcan
                     @if (auth()->user()->is_super_admin)
-                        <li class="nav-header">SUPER ADMIN</li>
+                    <li class="nav-header">SUPER ADMIN</li>
+
+                    @if (session('acting_company_id'))
                         <li class="nav-item">
-                            <a href="{{ route('super-admin.users.index') }}" class="nav-link {{ request()->routeIs('super-admin.users.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-users-cog"></i>
-                                <p>Kelola User</p>
+                            <div class="px-3 py-2">
+                                <div class="alert alert-warning py-2 px-3 mb-2" style="font-size: 0.8rem;">
+                                    <i class="fas fa-user-secret"></i> Bertindak sebagai:<br>
+                                    <strong>{{ \App\Models\Company::find(session('acting_company_id'))?->nama_toko }}</strong>
+                                </div>
+                                <form method="POST" action="{{ route('switch-company.clear') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-light btn-block">Keluar dari Mode Toko</button>
+                                </form>
+                            </div>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a href="{{ route('switch-company.index') }}" class="nav-link {{ request()->routeIs('switch-company.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-exchange-alt"></i>
+                                <p>Bertindak Sebagai Toko</p>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('super-admin.system-menus.edit') }}" class="nav-link {{ request()->routeIs('super-admin.system-menus.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-toggle-on"></i>
-                                <p>Kelola Menu Sistem</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('super-admin.permissions.edit') }}" class="nav-link {{ request()->routeIs('super-admin.permissions.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-user-shield"></i>
-                                <p>Kelola Hak Akses</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('super-admin.reset-data.edit') }}" class="nav-link {{ request()->routeIs('super-admin.reset-data.*') ? 'active' : '' }}">
-                                <i class="nav-icon fas fa-trash-restore"></i>
-                                <p>Reset Data</p>
-                            </a>
-                        </li>
-                        @endif
+                    @endif
+
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.users.index') }}" class="nav-link {{ request()->routeIs('super-admin.users.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users-cog"></i>
+                            <p>Kelola User</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.system-menus.edit') }}" class="nav-link {{ request()->routeIs('super-admin.system-menus.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-toggle-on"></i>
+                            <p>Kelola Menu Sistem</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.permissions.edit') }}" class="nav-link {{ request()->routeIs('super-admin.permissions.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Kelola Hak Akses</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('super-admin.reset-data.edit') }}" class="nav-link {{ request()->routeIs('super-admin.reset-data.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-trash-restore"></i>
+                            <p>Reset Data</p>
+                        </a>
+                    </li>
+                @endif
                 </ul>
             </nav>
         </div>
