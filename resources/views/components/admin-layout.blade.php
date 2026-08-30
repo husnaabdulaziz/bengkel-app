@@ -37,8 +37,27 @@
         /* Sidebar */
         .main-sidebar { background-color: {{ $themeColors['sidebar_color'] }} !important; }
         /* Logo & Nama Toko */
-        .brand-link { background-color: {{ $themeColors['brand_bg_color'] }} !important; }
+        .brand-link { background-color: {{ $themeColors['brand_bg_color'] }} !important; position: relative; }
         .brand-link .brand-text { color: {{ $themeColors['brand_text_color'] }} !important; }
+
+        /* Tombol minimize sidebar khusus HP landscape / tablet */
+        .sidebar-close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.15);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: {{ $themeColors['brand_text_color'] }};
+            font-size: 1rem;
+            z-index: 10;
+        }
+        .sidebar-close-btn:hover { background: rgba(0,0,0,0.25); }
 
         /* Menu aktif */
         .nav-sidebar > .nav-item > .nav-link.active,
@@ -215,6 +234,12 @@
 
     <!-- Sidebar -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Tombol minimize sidebar, khusus muncul di layar kecil (HP landscape / tablet) -->
+        <button type="button" class="sidebar-close-btn d-lg-none"
+    onclick="event.preventDefault(); event.stopPropagation(); document.body.classList.remove('sidebar-open'); document.body.classList.add('sidebar-collapse'); document.body.classList.remove('sidebar-collapse-force-off');">
+            <i class="fas fa-angle-left"></i>
+        </button>
+
         <a href="{{ route('dashboard') }}" class="brand-link d-flex flex-column align-items-center justify-content-center py-2">
             @if (auth()->user()->company?->logo_path)
                 <img src="{{ asset('storage/' . auth()->user()->company->logo_path) }}" alt="Logo" class="mb-1" style="max-width: 70%; max-height: 60px; object-fit: contain;">

@@ -147,6 +147,7 @@ Route::middleware(['auth', 'menu_permission:access_kas_harian'])->group(function
     Route::post('cash-closings/{cashClosing}/close', [CashClosingController::class, 'close'])->name('cash-closings.close');
     Route::post('cash-closings/{cashClosing}/reopen', [CashClosingController::class, 'reopen'])->name('cash-closings.reopen');
     Route::get('cash-closings', [CashClosingController::class, 'index'])->name('cash-closings.index');
+    Route::get('cash-closings/kamar-report', [CashClosingController::class, 'kamarReport'])->name('cash-closings.kamar-report');
 });
 
 // ===== Garansi =====

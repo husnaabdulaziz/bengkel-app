@@ -32,4 +32,6 @@ class CashClosing extends Model
     public function branch() { return $this->belongsTo(Branch::class); }
     public function openedBy() { return $this->belongsTo(User::class, 'opened_by'); }
     public function closedBy() { return $this->belongsTo(User::class, 'closed_by'); }
+
+    public function denominations() { return $this->hasMany(CashClosingDenomination::class); }
 }

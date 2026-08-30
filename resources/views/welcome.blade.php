@@ -199,9 +199,25 @@
         &copy; {{ date('Y') }} {{ $namaToko }}. All rights reserved.
     </footer>
 
-    <a href="https://wa.me/6281234567890" target="_blank" class="whatsapp-fab">
-        <i class="fab fa-whatsapp mr-1"></i> Hubungi Kami
-    </a>
+            @php
+            $waNumber = null;
+            if ($company?->telpon) {
+                $cleaned = preg_replace('/[^0-9]/', '', $company->telpon);
+                if (str_starts_with($cleaned, '0')) {
+                    $waNumber = '62' . substr($cleaned, 1);
+                } elseif (str_starts_with($cleaned, '62')) {
+                    $waNumber = $cleaned;
+                } else {
+                    $waNumber = '62' . $cleaned;
+                }
+            }
+        @endphp
+
+        @if ($waNumber)
+            <a href="https://wa.me/{{ $waNumber }}" target="_blank" class="whatsapp-fab">
+                <i class="fab fa-whatsapp mr-1"></i> Hubungi Kami
+            </a>
+        @endif
 
 </body>
 </html>

@@ -53,16 +53,73 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card" x-data="{
+                denoms: { 1000: 0, 2000: 0, 5000: 0, 10000: 0, 20000: 0, 50000: 0, 100000: 0 },
+                reserved: { 1000: 0, 2000: 0, 5000: 0, 10000: 0, 20000: 0, 50000: 0, 100000: 0 },
+                get total() {
+                    return Object.keys(this.denoms).reduce((sum, d) => sum + (d * (parseInt(this.denoms[d]) || 0)), 0);
+                },
+                get totalReserved() {
+                    return Object.keys(this.reserved).reduce((sum, d) => sum + (d * (parseInt(this.reserved[d]) || 0)), 0);
+                },
+                get totalKamar() {
+                    return this.total - this.totalReserved;
+                },
+                kamarCount(denom) {
+                    const c = parseInt(this.denoms[denom]) || 0;
+                    const r = parseInt(this.reserved[denom]) || 0;
+                    return Math.max(c - r, 0);
+                }
+            }">
                 <div class="card-header"><h3 class="card-title">Tutup Kas</h3></div>
                 <div class="card-body">
-                    <p class="text-muted">Hitung uang fisik di laci sekarang, masukkan totalnya di bawah ini.</p>
+                    <p class="text-muted">Hitung jumlah lembar uang fisik di laci per pecahan. Isi juga berapa lembar yang akan disisihkan sebagai uang kecil untuk besok — sisanya otomatis dihitung sebagai yang masuk ke kamar.</p>
                     <form method="POST" action="{{ route('cash-closings.close', $closing) }}">
                         @csrf
-                        <div class="form-group">
-                            <label>Jumlah Uang Real di Laci</label>
-                            <input type="number" step="0.01" name="actual_balance" required min="0" class="form-control" style="max-width: 300px;">
-                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Pecahan</th>
+                                    <th style="width: 100px;">Jumlah Lembar</th>
+                                    <th style="width: 100px;">Untuk Besok</th>
+                                    <th style="width: 80px;" class="text-center">Ke Kamar</th>
+                                    <th class="text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="denom in [1000, 2000, 5000, 10000, 20000, 50000, 100000]" :key="denom">
+                                    <tr>
+                                        <td x-text="'Rp ' + denom.toLocaleString('id-ID')"></td>
+                                        <td>
+                                            <input type="number" :name="`denominations[${denom}]`" x-model.number="denoms[denom]" min="0" class="form-control form-control-sm">
+                                        </td>
+                                        <td>
+                                            <input type="number" :name="`reserved[${denom}]`" x-model.number="reserved[denom]" min="0" :max="denoms[denom]" class="form-control form-control-sm">
+                                        </td>
+                                        <td class="text-center text-muted" x-text="kamarCount(denom)"></td>
+                                        <td class="text-right" x-text="'Rp ' + (denom * (parseInt(denoms[denom]) || 0)).toLocaleString('id-ID')"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot>
+                                <tr class="text-muted">
+                                    <td colspan="3" class="text-right">Total Untuk Besok (Petty Cash):</td>
+                                    <td></td>
+                                    <td class="text-right" x-text="'Rp ' + totalReserved.toLocaleString('id-ID')"></td>
+                                </tr>
+                                <tr class="text-muted">
+                                    <td colspan="3" class="text-right">Total Ke Kamar:</td>
+                                    <td></td>
+                                    <td class="text-right" x-text="'Rp ' + totalKamar.toLocaleString('id-ID')"></td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="4" class="text-right">Total Uang Real:</td>
+                                    <td class="text-right" x-text="'Rp ' + total.toLocaleString('id-ID')"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
                         <div class="form-group">
                             <label>Catatan (opsional)</label>
                             <textarea name="notes" rows="2" class="form-control"></textarea>
@@ -77,6 +134,9 @@
                 $diff = $closing->difference;
                 $diffColor = $diff == 0 ? 'success' : ($diff > 0 ? 'info' : 'danger');
                 $diffLabel = $diff == 0 ? 'Pas, tidak ada selisih' : ($diff > 0 ? 'Lebih' : 'Kurang');
+                $totalReserved = $closing->denominations->sum('reserved_for_next_day');
+                $totalReservedAmount = $closing->denominations->sum(fn($d) => $d->reserved_for_next_day * $d->denomination);
+                $totalKamarAmount = $closing->actual_balance - $totalReservedAmount;
             @endphp
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Kas Hari Ini Sudah Ditutup</h3></div>
@@ -87,6 +147,8 @@
                         <tr><td>- Pengeluaran</td><td class="text-right text-danger">Rp {{ number_format($closing->cash_expenses, 0, ',', '.') }}</td></tr>
                         <tr class="border-top"><td>Seharusnya Ada</td><td class="text-right">Rp {{ number_format($closing->expected_balance, 0, ',', '.') }}</td></tr>
                         <tr><td>Uang Real Dihitung</td><td class="text-right">Rp {{ number_format($closing->actual_balance, 0, ',', '.') }}</td></tr>
+                        <tr><td>Untuk Besok (Petty Cash)</td><td class="text-right">Rp {{ number_format($totalReservedAmount, 0, ',', '.') }}</td></tr>
+                        <tr><td><strong>Masuk ke Kamar</strong></td><td class="text-right"><strong>Rp {{ number_format($totalKamarAmount, 0, ',', '.') }}</strong></td></tr>
                     </table>
 
                     <div class="alert alert-{{ $diffColor }} text-center">
@@ -99,7 +161,38 @@
                     @if ($closing->notes)
                         <p class="text-muted"><strong>Catatan:</strong> {{ $closing->notes }}</p>
                     @endif
-
+                    @if ($closing->denominations->isNotEmpty())
+                        <table class="table table-sm mb-3">
+                            <thead>
+                                <tr>
+                                    <th>Pecahan</th>
+                                    <th class="text-right">Lembar</th>
+                                    <th class="text-right">Untuk Besok</th>
+                                    <th class="text-right">Ke Kamar</th>
+                                    <th class="text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($closing->denominations->sortByDesc('denomination') as $d)
+                                    <tr>
+                                        <td>Rp {{ number_format($d->denomination, 0, ',', '.') }}</td>
+                                        <td class="text-right">{{ $d->count }}</td>
+                                        <td class="text-right">{{ $d->reserved_for_next_day }}</td>
+                                        <td class="text-right">{{ $d->kamar_count }}</td>
+                                        <td class="text-right">Rp {{ number_format($d->denomination * $d->count, 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr class="font-weight-bold">
+                                    <td class="text-right" colspan="2">Total:</td>
+                                    <td class="text-right">{{ $totalReserved }}</td>
+                                    <td class="text-right">{{ $closing->denominations->sum(fn($d) => $d->kamar_count) }}</td>
+                                    <td class="text-right">Rp {{ number_format($closing->actual_balance, 0, ',', '.') }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    @endif
                     <p class="text-muted small mb-0">Ditutup oleh {{ $closing->closedBy?->name }} pada {{ $closing->closed_at?->format('d/m/Y H:i') }}</p>
 
                     <form method="POST" action="{{ route('cash-closings.reopen', $closing) }}" class="mt-3" onsubmit="return confirm('Buka kembali kas ini? Data penutupan sebelumnya akan direset dan Anda perlu tutup kas ulang.')">
