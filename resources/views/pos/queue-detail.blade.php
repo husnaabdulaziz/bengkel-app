@@ -59,7 +59,7 @@
                                         <span x-text="p.nama"></span>
                                         <template x-if="!p.is_jasa">
                                             <small class="ml-1" :class="p.out_of_stock ? 'text-danger font-weight-bold' : 'text-muted'"
-                                                   x-text="p.out_of_stock ? '(Stok habis)' : '(Stok: ' + p.stock + ')'"></small>
+                                                x-text="p.out_of_stock ? '(Stok habis)' : '(Stok: ' + p.stock + (p.lokasi_rak ? ' • ' + p.lokasi_rak : '') + ')'"></small>
                                         </template>
                                     </span>
                                     <span class="text-muted" x-text="'Rp ' + parseFloat(p['{{ $workOrder->customer_price_tier }}'] ?? p.harga_jual).toLocaleString('id-ID')"></span>

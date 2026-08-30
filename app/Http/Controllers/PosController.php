@@ -51,7 +51,7 @@ class PosController extends Controller
         $products = Product::where('nama', 'like', "%{$q}%")
             ->where('status', 'active')
             ->limit(10)
-            ->get(['id', 'nama', 'satuan', 'harga_jual', 'harga_jual_jasa', 'harga_online', 'harga_ojol', 'is_jasa']);
+            ->get(['id', 'nama', 'satuan', 'harga_jual', 'harga_jual_jasa', 'harga_online', 'harga_ojol', 'is_jasa', 'lokasi_rak']);
 
         $result = $products->map(function ($p) use ($branchId) {
             $stock = ($p->is_jasa || !$branchId) ? null : $p->stockAtBranch((int) $branchId);
@@ -65,6 +65,7 @@ class PosController extends Controller
                 'harga_ojol' => $p->harga_ojol,
                 'is_jasa' => $p->is_jasa,
                 'stock' => $stock,
+                'lokasi_rak' => $p->lokasi_rak,
                 'out_of_stock' => !$p->is_jasa && $stock !== null && $stock <= 0,
             ];
         });

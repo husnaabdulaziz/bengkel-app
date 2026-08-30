@@ -61,6 +61,7 @@
         }
         .list-group-item-action:hover {
             background-color: {{ $themeColors['hover_color'] }} !important;
+            opacity: 1 !important;
         }
 
         /* Paksa menu sidebar tetap horizontal di semua ukuran layar */
