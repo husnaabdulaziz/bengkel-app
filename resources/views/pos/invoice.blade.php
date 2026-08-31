@@ -22,10 +22,22 @@
     </div>
     <hr>
     <div>
-        No. Invoice: {{ $workOrder->invoice_number }}<br>
-        Tanggal: {{ $workOrder->paid_at->format('d/m/Y H:i') }}<br>
-        Pelanggan: {{ $workOrder->customer->nama }}<br>
-        @if ($workOrder->customer->plat_nomor) Plat: {{ $workOrder->customer->plat_nomor }}<br> @endif
+        @php
+            $technicianLabels = $workOrder->assignedTechnicians()->map(function ($tech) {
+                return $tech->name . '(' . ($tech->inisial ?: '-') . ')';
+            })->implode(', ');
+        @endphp
+        <table style="width: 100%; border: none;">
+            <tr><td style="border: none; padding: 0; white-space: nowrap; width: 65px;">No. Invoice</td><td style="border: none; padding: 0;">: {{ $workOrder->invoice_number }}</td></tr>
+            <tr><td style="border: none; padding: 0; white-space: nowrap; width: 65px;">Tanggal</td><td style="border: none; padding: 0;">: {{ $workOrder->paid_at->format('d/m/Y H:i') }}</td></tr>
+            <tr><td style="border: none; padding: 0; white-space: nowrap; width: 65px;">Pelanggan</td><td style="border: none; padding: 0;">: {{ $workOrder->customer->nama }}</td></tr>
+            @if ($workOrder->customer->plat_nomor)
+                <tr><td style="border: none; padding: 0; white-space: nowrap; width: 65px;">Plat</td><td style="border: none; padding: 0;">: {{ $workOrder->customer->plat_nomor }}</td></tr>
+            @endif
+            @if ($technicianLabels)
+                <tr><td style="border: none; padding: 0; white-space: nowrap; width: 65px;">Mekanik</td><td style="border: none; padding: 0;">: {{ $technicianLabels }}</td></tr>
+            @endif
+        </table>
     </div>
     <hr>
     <table>

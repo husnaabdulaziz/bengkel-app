@@ -98,6 +98,12 @@ class ProductController extends Controller
         $feeData = $this->extractFeeData($request);
 
         $product = Product::create($validated);
+                    if ($request->filled('stock_branch_id') && $request->filled('stock_awal') && (int) $request->stock_awal > 0 && !$product->is_jasa) {
+                \App\Models\ProductBranchStock::updateOrCreate(
+                    ['product_id' => $product->id, 'branch_id' => $request->stock_branch_id],
+                    ['stock_qty' => (int) $request->stock_awal]
+                );
+            }
 
         if ($feeData['fee_value'] > 0) {
             ProductFee::create(array_merge($feeData, ['product_id' => $product->id]));

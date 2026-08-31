@@ -18,14 +18,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ProductImportController extends Controller
 {
-    private array $headers = [
-    'Nama Produk', 'Ukuran', 'Nama Model', 'SKU', 'Kategori', 'Sub Kategori', 'Brand', 'Vendor', 'Satuan', 'Lokasi Rak',
-    'Harga Modal', 'Harga Jual', 'Harga Jual Bawa', 'Harga Online', 'Harga Ojol',
-    'Harga Pasang (Fee Mekanik)',
-    'Garansi Aktif (Ya/Tidak)', 'Durasi Garansi (hari)',
-    'Stock Awal', 'Minimum Stock',
-    ];
-
     public function showForm()
     {
         $branches = auth()->user()->isSuperAdmin() ? Branch::all() : auth()->user()->branches;
@@ -34,14 +26,25 @@ class ProductImportController extends Controller
 
     public function downloadTemplate()
     {
+        $categoryList = ProductCategory::orderBy('nama')->pluck('nama')->implode('/');
+        $kategoriHeader = 'Kategori' . ($categoryList ? " ({$categoryList})" : '');
+
+        $headers = [
+            'SKU', 'Nama Produk', 'Ukuran', 'Nama Model', $kategoriHeader, 'Sub Kategori', 'Brand', 'Vendor', 'Satuan', 'Lokasi Rak',
+            'Harga Modal', 'Harga Jual', 'Harga Jual Bawa', 'Harga Online', 'Harga Ojol',
+            'Harga Pasang (Fee Mekanik)',
+            'Garansi Aktif (Ya/Tidak)', 'Durasi Garansi (hari)',
+            'Stock Awal', 'Minimum Stock',
+        ];
+
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Import Produk');
-        $sheet->fromArray($this->headers, null, 'A1');
+        $sheet->fromArray($headers, null, 'A1');
         $sheet->getStyle('A1:T1')->getFont()->setBold(true);
 
         $sheet->fromArray([
-            'Swallow Razor TL Ring 12', '100/90', 'Swallow Razor TL Ring 12', 'BAN-001', 'Ban', 'Ring 12', 'Swallow', 'PT Sumber Jaya', 'pcs', 'Rak Ban A',
+            'BAN-001', 'Swallow Razor TL Ring 12', '100/90', 'Swallow Razor TL Ring 12', 'Ban', 'Ring 12', 'Swallow', 'PT Sumber Jaya', 'pcs', 'Rak Ban A',
             280000, 338000, 348000, 335000, 330000,
             5000,
             'Tidak', 0,
@@ -87,7 +90,7 @@ class ProductImportController extends Controller
             try {
                 DB::transaction(function () use ($row, $validated) {
                     [
-                        $nama, $ukuran, $modelName, $sku, $kategoriNama, $subkategoriNama, $brandNama, $vendorNama, $satuan, $lokasiRak,
+                        $sku, $nama, $ukuran, $modelName, $kategoriNama, $subkategoriNama, $brandNama, $vendorNama, $satuan, $lokasiRak,
                         $hargaModal, $hargaJual, $hargaJualBawa, $hargaOnline, $hargaOjol,
                         $hargaPasang,
                         $garansiAktifRaw, $garansiDurasi,
@@ -126,8 +129,6 @@ class ProductImportController extends Controller
                         $vendor = Supplier::firstOrCreate(['nama' => trim($vendorNama)]);
                     }
 
-                    // Bangun data update secara kondisional: kolom yang KOSONG di Excel
-                    // tidak akan menimpa nilai yang sudah tersimpan (khusus saat produk sudah ada sebelumnya).
                     $updateData = [];
                     if ($isFilled($sku)) $updateData['sku'] = $sku;
                     if ($category) $updateData['category_id'] = $category->id;
@@ -153,7 +154,6 @@ class ProductImportController extends Controller
 
                     $isNewProduct = !Product::where('nama', trim($nama))->exists();
 
-                    // Untuk produk BARU, isi default supaya tidak ada nilai null yang bikin error
                     if ($isNewProduct) {
                         $updateData = array_merge([
                             'satuan' => 'pcs',

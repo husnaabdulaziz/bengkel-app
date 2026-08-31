@@ -123,15 +123,36 @@
     </div>
 </div>
 
-<div class="form-group">
-    <div class="custom-control custom-checkbox custom-control-inline">
-        <input type="checkbox" class="custom-control-input" id="is_jasa" name="is_jasa" value="1" @checked(old('is_jasa', $p?->is_jasa))>
-        <label class="custom-control-label" for="is_jasa">Ini item Jasa (tidak punya stock)</label>
+<div x-data="{ isJasa: {{ old('is_jasa', $p?->is_jasa) ? 'true' : 'false' }} }">
+    <div class="form-group">
+        <div class="custom-control custom-checkbox custom-control-inline">
+            <input type="checkbox" class="custom-control-input" id="is_jasa" name="is_jasa" value="1" x-model="isJasa" @checked(old('is_jasa', $p?->is_jasa))>
+            <label class="custom-control-label" for="is_jasa">Ini item Jasa (tidak punya stock)</label>
+        </div>
+        <div class="custom-control custom-checkbox custom-control-inline">
+            <input type="checkbox" class="custom-control-input" id="garansi_aktif" name="garansi_aktif" value="1" @checked(old('garansi_aktif', $p?->garansi_aktif))>
+            <label class="custom-control-label" for="garansi_aktif">Aktifkan garansi</label>
+        </div>
     </div>
-    <div class="custom-control custom-checkbox custom-control-inline">
-        <input type="checkbox" class="custom-control-input" id="garansi_aktif" name="garansi_aktif" value="1" @checked(old('garansi_aktif', $p?->garansi_aktif))>
-        <label class="custom-control-label" for="garansi_aktif">Aktifkan garansi</label>
-    </div>
+
+    @if (!$p)
+        <div class="row" x-show="!isJasa" x-cloak>
+            <div class="col-md-6 form-group">
+                <label>Cabang (untuk Stock Saat Ini)</label>
+                <select name="stock_branch_id" class="form-control">
+                    <option value="">- Pilih Cabang -</option>
+                    @foreach (auth()->user()->isSuperAdmin() ? \App\Models\Branch::all() : auth()->user()->branches as $branch)
+                        <option value="{{ $branch->id }}" @selected($branch->is_main)>{{ $branch->nama_cabang }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-6 form-group">
+                <label>Stock Saat Ini</label>
+                <input type="number" name="stock_awal" value="{{ old('stock_awal', 0) }}" min="0" class="form-control">
+                <small class="text-muted">Isi kalau produk ini sudah punya stock fisik saat pertama kali didaftarkan.</small>
+            </div>
+        </div>
+    @endif
 </div>
 
 <div class="form-group">
