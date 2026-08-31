@@ -9,18 +9,19 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <div x-data="{ showKategori: false, showSubkategori: false, showBrand: false, showLokasi: false, searchQuery: '' }">
+    <div x-data="{ showSku: false, showKategori: false, showSubkategori: false, showBrand: false, showLokasi: false, searchQuery: '' }">
 
         <div class="card">
             <div class="card-body">
                 <div class="mb-3">
                     <span class="text-muted small mr-3">Tampilkan kolom tambahan:</span>
+                    <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showSku" class="mr-1"> SKU</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showKategori" class="mr-1"> Kategori</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showSubkategori" class="mr-1"> Sub Kategori</label>
                     <label class="d-inline-flex align-items-center mr-3"><input type="checkbox" x-model="showBrand" class="mr-1"> Brand</label>
                     <label class="d-inline-flex align-items-center"><input type="checkbox" x-model="showLokasi" class="mr-1"> Lokasi Rak</label>
                 </div>
-                <input type="text" x-model="searchQuery" placeholder="Cari nama produk, kategori, sub kategori, atau brand..." class="form-control">
+                <input type="text" x-model="searchQuery" placeholder="Cari nama produk,SKU, kategori, sub kategori, atau brand..." class="form-control">
             </div>
         </div>
 
@@ -31,6 +32,7 @@
                 <table class="table mb-0">
                     <thead>
                         <tr>
+                            <th x-show="showSku" x-cloak>SKU</th>
                             <th>Produk</th>
                             <th x-show="showKategori" x-cloak>Kategori</th>
                             <th x-show="showSubkategori" x-cloak>Sub Kategori</th>
@@ -45,9 +47,10 @@
                     <tbody>
                         @foreach ($opname->items as $item)
                             @php
-                                $searchable = strtolower($item->product->nama . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? '') . ' ' . ($item->product->lokasi_rak ?? ''));
+                                $searchable = strtolower($item->product->nama . ' ' . ($item->product->sku ?? '') . ' ' . ($item->product->category?->nama ?? '') . ' ' . ($item->product->subcategory?->nama ?? '') . ' ' . ($item->product->brand?->nama ?? '') . ' ' . ($item->product->lokasi_rak ?? ''));
                             @endphp
                             <tr x-show="searchQuery === '' || '{{ addslashes($searchable) }}'.includes(searchQuery.toLowerCase())">
+                                <td class="text-muted" x-show="showSku" x-cloak>{{ $item->product->sku ?? '-' }}</td>
                                 <td>{{ $item->product->nama }}</td>
                                 <td class="text-muted" x-show="showKategori" x-cloak>{{ $item->product->category?->nama ?? '-' }}</td>
                                 <td class="text-muted" x-show="showSubkategori" x-cloak>{{ $item->product->subcategory?->nama ?? '-' }}</td>
@@ -87,7 +90,7 @@
         @else
             <div class="d-flex justify-content-between align-items-center">
                 <p class="text-success font-weight-bold mb-0">Opname ini sudah selesai dan stock telah disesuaikan.</p>
-                <a :href="`{{ route('stock-opnames.pdf', $opname) }}?kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}&lokasi=${showLokasi ? 1 : 0}`"
+                <a :href="`{{ route('stock-opnames.pdf', $opname) }}?sku=${showSku ? 1 : 0}&kategori=${showKategori ? 1 : 0}&subkategori=${showSubkategori ? 1 : 0}&brand=${showBrand ? 1 : 0}&lokasi=${showLokasi ? 1 : 0}`"
                    target="_blank" class="btn btn-secondary"><i class="fas fa-file-pdf"></i> Download PDF</a>
             </div>
         @endif

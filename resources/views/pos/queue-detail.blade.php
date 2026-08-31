@@ -137,7 +137,7 @@
                             <label class="custom-control-label" for="editManualFee">Input Fee Manual</label>
                         </div>
                         <p class="text-muted small mb-3" x-show="selectedTechnicians.length > 1">Fee wajib diisi manual karena lebih dari 1 mekanik dipilih.</p>
-                        <button type="submit" class="btn btn-secondary btn-sm">Simpan Mekanik</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Simpan Mekanik</button>
                     </form>
                 </div>
             </div>

@@ -28,6 +28,7 @@
     <table>
         <thead>
             <tr>
+                @if ($showSku) <th>SKU</th> @endif
                 <th>Produk</th>
                 @if ($showKategori) <th>Kategori</th> @endif
                 @if ($showSubkategori) <th>Sub Kategori</th> @endif
@@ -42,6 +43,7 @@
         <tbody>
             @foreach ($opname->items as $item)
                 <tr>
+                    @if ($showSku) <td>{{ $item->product->sku ?? '-' }}</td> @endif
                     <td>{{ $item->product->nama }}</td>
                     @if ($showKategori) <td>{{ $item->product->category?->nama ?? '-' }}</td> @endif
                     @if ($showSubkategori) <td>{{ $item->product->subcategory?->nama ?? '-' }}</td> @endif

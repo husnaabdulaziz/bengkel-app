@@ -142,6 +142,7 @@ class StockOpnameController extends Controller
 
         $pdf = Pdf::loadView('inventory.opnames.pdf', [
             'opname' => $stockOpname,
+            'showSku' => $request->boolean('sku'),
             'showKategori' => $request->boolean('kategori'),
             'showSubkategori' => $request->boolean('subkategori'),
             'showBrand' => $request->boolean('brand'),
